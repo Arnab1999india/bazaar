@@ -97,8 +97,9 @@ export const authValidation = {
   }),
 
   resetPassword: Joi.object({
-    token: Joi.string().required().messages({
-      "string.empty": "Reset token is required",
+    email: Joi.string().required().email().lowercase().trim().messages({
+      "string.empty": "Email is required",
+      "string.email": "Please enter a valid email address",
     }),
 
     newPassword: Joi.string()
@@ -112,6 +113,42 @@ export const authValidation = {
         "string.max": "New password cannot exceed 128 characters",
         "string.pattern.base":
           "New password must contain at least one uppercase letter, one lowercase letter, and one number",
+      }),
+  }),
+
+  verifyOTP: Joi.object({
+    email: Joi.string().required().email().lowercase().trim().messages({
+      "string.empty": "Email is required",
+      "string.email": "Please enter a valid email address",
+    }),
+
+    otp: Joi.string().required().length(6).pattern(/^\d+$/).messages({
+      "string.empty": "OTP is required",
+      "string.length": "OTP must be 6 digits",
+      "string.pattern.base": "OTP must contain only numbers",
+    }),
+
+    purpose: Joi.string()
+      .valid("registration", "password-reset")
+      .required()
+      .messages({
+        "string.empty": "Purpose is required",
+        "any.only": "Purpose must be either 'registration' or 'password-reset'",
+      }),
+  }),
+
+  resendOTP: Joi.object({
+    email: Joi.string().required().email().lowercase().trim().messages({
+      "string.empty": "Email is required",
+      "string.email": "Please enter a valid email address",
+    }),
+
+    purpose: Joi.string()
+      .valid("registration", "password-reset")
+      .required()
+      .messages({
+        "string.empty": "Purpose is required",
+        "any.only": "Purpose must be either 'registration' or 'password-reset'",
       }),
   }),
 };
