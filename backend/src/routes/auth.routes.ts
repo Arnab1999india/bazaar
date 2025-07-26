@@ -14,6 +14,18 @@ router.post(
 );
 
 router.post(
+  "/initiate-registration",
+  validateRequest(authValidation.register),
+  AuthController.initiateRegistration
+);
+
+router.post(
+  "/verify-registration",
+  validateRequest(authValidation.verifyOTP),
+  AuthController.verifyRegistration
+);
+
+router.post(
   "/login",
   validateRequest(authValidation.login),
   AuthController.login
@@ -23,6 +35,24 @@ router.post(
   "/password-reset-request",
   validateRequest(authValidation.resetPasswordRequest),
   AuthController.requestPasswordReset
+);
+
+router.post(
+  "/verify-password-reset-otp",
+  validateRequest(authValidation.verifyOTP),
+  AuthController.verifyPasswordResetOTP
+);
+
+router.post(
+  "/reset-password",
+  validateRequest(authValidation.resetPassword),
+  AuthController.resetPassword
+);
+
+router.post(
+  "/resend-otp",
+  validateRequest(authValidation.resendOTP),
+  AuthController.resendOTP
 );
 
 // OAuth routes

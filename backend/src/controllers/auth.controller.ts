@@ -3,8 +3,45 @@ import { AuthService } from "../services/auth.service";
 import { ILoginInput, IUserInput } from "../interfaces/user.interface";
 import { AppError, ErrorType } from "../interfaces/error.interface";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { IOTPInput, IOTPVerifyInput } from "../interfaces/otp.interface";
 
 export class AuthController {
+  static async initiateRegistration(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userData: IUserInput = req.body;
+      const result = await AuthService.initiateRegistration(userData);
+
+      res.status(201).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async verifyRegistration(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const verifyData: IOTPVerifyInput = req.body;
+      const result = await AuthService.verifyRegistration(verifyData);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
       const userData: IUserInput = req.body;
@@ -140,11 +177,57 @@ export class AuthController {
   ) {
     try {
       const { email } = req.body;
-      await AuthService.resetPasswordRequest(email);
+      const result = await AuthService.resetPasswordRequest(email);
 
       res.status(200).json({
         success: true,
-        message: "Password reset instructions sent to email",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async verifyPasswordResetOTP(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const verifyData: IOTPVerifyInput = req.body;
+      const result = await AuthService.verifyPasswordResetOTP(verifyData);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, newPassword } = req.body;
+      const result = await AuthService.resetPassword(email, newPassword);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async resendOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const otpData: IOTPInput = req.body;
+      const result = await AuthService.resendOTP(otpData);
+
+      res.status(200).json({
+        success: true,
+        data: result,
       });
     } catch (error) {
       next(error);

@@ -49,6 +49,10 @@ const userSchema = new Schema<IUserDocument>(
       match: [/^\+?[\d\s-]+$/, "Please enter a valid phone number"],
       sparse: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -64,8 +68,8 @@ const userSchema = new Schema<IUserDocument>(
 );
 
 // Index for faster queries
-userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
+// userSchema.index({ email: 1 });
+// userSchema.index({ googleId: 1 });
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
