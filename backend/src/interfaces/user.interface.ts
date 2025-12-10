@@ -7,11 +7,20 @@ export enum UserRole {
 export interface IUser {
   id: string;
   name: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email: string;
   password?: string;
   role: UserRole;
   googleId?: string;
   phone?: string;
+  bio?: string | null;
+  dateOfBirth?: Date | null;
+  locationCity?: string | null;
+  locationCountry?: string | null;
+  educationSchool?: string | null;
+  educationCollege?: string | null;
+  profileImageUrl?: string | null;
   isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -24,6 +33,15 @@ export interface IUserInput {
   role?: UserRole;
   googleId?: string;
   phone?: string;
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  dateOfBirth?: Date;
+  locationCity?: string;
+  locationCountry?: string;
+  educationSchool?: string;
+  educationCollege?: string;
+  profileImageUrl?: string;
 }
 
 export interface ILoginInput {

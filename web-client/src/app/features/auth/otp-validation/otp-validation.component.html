@@ -1,0 +1,53 @@
+<div class="otp-validation-container">
+  <div class="otp-validation-card">
+    <h2>Verify Your Email</h2>
+    <p>
+      We've sent a 6-digit code to your email. Enter it below to verify your
+      account.
+    </p>
+    <form [formGroup]="otpForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="otp">OTP Code</label>
+        <input
+          type="text"
+          id="otp"
+          formControlName="otp"
+          placeholder="Enter 6-digit code"
+          class="form-control otp-input"
+          maxlength="6"
+          (input)="onOtpInput($event)"
+        />
+        <div
+          class="error"
+          *ngIf="otpForm.get('otp')?.invalid && otpForm.get('otp')?.touched"
+        >
+          <span *ngIf="otpForm.get('otp')?.errors?.['required']"
+            >OTP is required</span
+          >
+          <span *ngIf="otpForm.get('otp')?.errors?.['pattern']"
+            >OTP must be 6 digits</span
+          >
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="otpForm.invalid"
+      >
+        Verify
+      </button>
+    </form>
+
+    <div class="links">
+      <p>
+        Didn't receive the code?
+        <a (click)="resendOtp()" class="link">Resend OTP</a>
+      </p>
+      <p>
+        Wrong email?
+        <a (click)="navigateToForgotPassword()" class="link">Change Email</a>
+      </p>
+    </div>
+  </div>
+</div>
