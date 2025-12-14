@@ -37,6 +37,9 @@ import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
 import productRoutes from "./routes/product.routes";
 import reviewRoutes from "./routes/review.routes";
+import catalogRoutes from "./routes/catalog.routes";
+import userRoutes from "./routes/user.routes";
+import storeRoutes from "./routes/store.routes";
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -44,6 +47,9 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/stores", storeRoutes);
+app.use("/api", catalogRoutes);
 
 // Cleanup expired OTPs every hour
 setInterval(async () => {

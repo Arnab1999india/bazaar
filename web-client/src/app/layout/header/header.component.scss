@@ -1,0 +1,76 @@
+header {
+  font-family: "Arial", sans-serif;
+}
+
+.navbar-top {
+  background-color: #131921; /* Dark Blue from image */
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  color: white;
+
+  .logo a {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    letter-spacing: 1px;
+  }
+
+  .search-bar {
+    flex-grow: 1;
+    display: flex;
+    max-width: 800px;
+
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      outline: none;
+    }
+
+    .search-btn {
+      background-color: #febd69; /* Amazon-like yellow/orange or blue based on pref */
+      border: none;
+      padding: 0 1rem;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background-color: #f3a847;
+      }
+    }
+  }
+
+  .nav-links .sign-in {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+  }
+}
+
+.navbar-bottom {
+  background-color: #232f3e; /* Slightly lighter blue */
+  padding: 0.5rem 1.5rem;
+
+  ul {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+
+    a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

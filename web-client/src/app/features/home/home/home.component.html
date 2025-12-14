@@ -1,0 +1,50 @@
+<section class="hero-section">
+  <div class="container">
+    <h1>Welcome to Bazaar</h1>
+    <p>Discover the best trends in fashion, electronics, and more.</p>
+    <button class="cta-btn">Shop Now</button>
+  </div>
+</section>
+<div class="home-container">
+  <section class="hero">
+    <h1>Shop the latest deals</h1>
+    <button class="shop-now-btn">Shop now</button>
+  </section>
+
+  <section class="grid-section">
+    <div class="card" *ngFor="let cat of categories">
+      <h2>{{ cat.title }}</h2>
+
+      <div class="image-container">
+        <img
+          [src]="cat.image"
+          alt="{{ cat.title }}"
+          onerror="this.src='https://via.placeholder.com/300x250?text=Product+Image'"
+        />
+      </div>
+
+      <button class="card-link">{{ cat.link }}</button>
+    </div>
+  </section>
+
+  <div class="discover-bar">
+    <h2>Discover more</h2>
+  </div>
+</div>
+<section class="categories">
+  <div class="container">
+    <h2>Shop by Category</h2>
+    <div class="grid-container">
+      <div class="card">Electronics</div>
+      <div class="card">Fashion</div>
+      <div class="card">Home & Living</div>
+    </div>
+  </div>
+</section>
+
+<section class="featured">
+  <div class="container">
+    <h2>Trending Now</h2>
+    <p>Loading best sellers...</p>
+  </div>
+</section>

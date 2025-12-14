@@ -49,7 +49,7 @@ const cartSchema = new Schema<ICartDocument>(
 );
 
 // Indexes
-cartSchema.index({ user: 1 });
+// cartSchema.index({ user: 1 });
 cartSchema.index({ "items.product": 1 });
 
 // Methods

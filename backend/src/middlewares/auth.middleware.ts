@@ -45,6 +45,28 @@ export const auth = async (
   }
 };
 
+export const optionalAuth = async (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, envConfig.JWT_SECRET) as { id: string };
+    const user = await User.findById(decoded.id);
+    if (user) {
+      req.user = user;
+    }
+  } catch (error) {
+    // Ignore invalid token for optional auth
+  }
+  next();
+};
+
 export const authorize = (...roles: UserRole[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

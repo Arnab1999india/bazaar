@@ -10,7 +10,7 @@ export const connectDatabase = async (): Promise<void> => {
       socketTimeoutMS: 45000,
     };
 
-    await mongoose.connect(envConfig.MONGODB_URI, options);
+    await mongoose.connect(envConfig.MONGO_URI, options);
 
     mongoose.connection.on("connected", () => {
       console.log("MongoDB connected successfully");

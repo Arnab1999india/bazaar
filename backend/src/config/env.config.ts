@@ -7,7 +7,7 @@ dotenv.config();
 interface IEnvConfig {
   NODE_ENV: "development" | "production" | "test";
   PORT: number;
-  MONGODB_URI: string;
+  MONGO_URI: string;
   JWT_SECRET: string;
   JWT_EXPIRES_IN: string | number;
   GOOGLE_CLIENT_ID: string;
@@ -26,7 +26,7 @@ const getConfig = (): IEnvConfig => {
   const config: Record<keyof IEnvConfig, string | undefined> = {
     NODE_ENV: process.env.NODE_ENV,
     PORT: process.env.PORT,
-    MONGODB_URI: process.env.MONGODB_URI,
+    MONGO_URI: process.env.MONGO_URI,
     JWT_SECRET: process.env.JWT_SECRET,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -45,7 +45,7 @@ const getConfig = (): IEnvConfig => {
   const requiredEnvVars: (keyof IEnvConfig)[] = [
     "NODE_ENV",
     "PORT",
-    "MONGODB_URI",
+    "MONGO_URI",
     "JWT_SECRET",
     "JWT_EXPIRES_IN",
   ];
@@ -63,7 +63,7 @@ const getConfig = (): IEnvConfig => {
   return {
     NODE_ENV: (config.NODE_ENV as IEnvConfig["NODE_ENV"]) || "development",
     PORT: parseInt(config.PORT as string, 10) || 5000,
-    MONGODB_URI: config.MONGODB_URI as string,
+    MONGO_URI: config.MONGO_URI as string,
     JWT_SECRET: config.JWT_SECRET as string,
     JWT_EXPIRES_IN: config.JWT_EXPIRES_IN || "7d",
     GOOGLE_CLIENT_ID: config.GOOGLE_CLIENT_ID as string,

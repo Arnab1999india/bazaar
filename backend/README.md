@@ -1,26 +1,23 @@
 # E-commerce Backend API
 
-A TypeScript-based Node.js/Express backend for an e-commerce platform with MongoDB.
+A TypeScript-based Node.js/Express backend for an e-commerce platform backed by MongoDB.
 
 ## Features
 
-- 🔐 Authentication & Authorization (JWT, Google OAuth)
-- 🛍️ Product Management
-- 🛒 Shopping Cart & Wishlist
-- 📦 Order Management
-- ⭐ Product Reviews & Ratings
-- 👥 User Management
-- 📧 Email Notifications
-- 🖼️ Image Upload (Cloudinary)
-- 📝 API Documentation (Swagger)
-- ✅ Input Validation
-- 🔒 Rate Limiting
-- 🧪 Unit & Integration Tests
+- Authentication & authorization (JWT, Google OAuth)
+- Rich product catalog with text search, filtering, sorting, variants, and recommendations
+- Dynamic category tree, brand directory, lightning deals, and best-seller feeds
+- Recently viewed tracking and product view analytics
+- Shopping cart, wishlists, orders, reviews, and ratings
+- Seller store pages with aggregated metrics
+- User profile management with friend suggestions based on shared attributes
+- Email notifications, OTP workflows, Cloudinary image uploads, and Swagger docs
+- Input validation, rate limiting, and automated tests
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB
+- Node.js (v16 or higher recommended)
+- MongoDB instance
 - npm or yarn
 
 ## Installation
@@ -31,11 +28,11 @@ A TypeScript-based Node.js/Express backend for an e-commerce platform with Mongo
    cd backend
    npm install
    ```
-3. Copy the environment variables:
+3. Copy environment variables:
    ```bash
    cp .env.example .env
    ```
-4. Update the `.env` file with your configuration
+4. Update the `.env` file with your configuration (MongoDB URI, JWT secret, etc.)
 
 ## Development
 
@@ -45,54 +42,67 @@ Start the development server:
 npm run dev
 ```
 
+The API will be available at `http://localhost:5000` by default.
+
 ## Scripts
 
-- `npm start` - Start the production server
-- `npm run dev` - Start the development server with hot-reload
-- `npm run build` - Build the TypeScript code
-- `npm run watch` - Watch for TypeScript changes
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors
-- `npm run clean` - Remove build directory
-- `npm run build:clean` - Clean and rebuild
-- `npm run start:prod` - Start production server
+- `npm start` � start the production server
+- `npm run dev` � start the development server with hot reload
+- `npm run build` � compile TypeScript to JavaScript
+- `npm run watch` � watch for TypeScript changes
+- `npm test` � run unit/integration tests
+- `npm run test:watch` � run tests in watch mode
+- `npm run test:coverage` � run tests with coverage report
+- `npm run lint` � run ESLint
+- `npm run lint:fix` � auto-fix lint issues
+- `npm run clean` � remove build artifacts
+- `npm run build:clean` � clean and rebuild the project
+- `npm run start:prod` � run the compiled production server
 
 ## Project Structure
 
 ```
 src/
-├── config/         # Configuration files
-├── controllers/    # Route controllers
-├── interfaces/     # TypeScript interfaces
-├── middlewares/    # Custom middlewares
-├── models/         # Mongoose models
-├── routes/         # API routes
-├── services/       # Business logic
-├── utils/         # Utility functions
-├── app.ts         # Express app setup
-└── index.ts       # Entry point
++-- config/        # Configuration helpers
++-- controllers/   # Express route controllers
++-- interfaces/    # TypeScript interfaces & DTOs
++-- middlewares/   # Authentication & utility middleware
++-- models/        # Mongoose models
++-- routes/        # Route definitions
++-- services/      # Business logic layer
++-- utils/         # Shared utilities
++-- app.ts         # Express application setup
++-- index.ts       # Application entry point
 ```
 
-## API Documentation
+## API Highlights
 
-Once the server is running, visit `/api-docs` for the Swagger documentation.
+- `GET /api/categories` � category tree with product counts
+- `GET /api/brands` � brand directory (filterable by category)
+- `GET /api/products` � catalog browse/search with advanced filters
+- `GET /api/products/:id/variants` & `/recommendations` � product detail enrichments
+- `GET /api/deals`, `/api/bestsellers`, `/api/recently-viewed` � merchandising feeds
+- `POST /api/events/view` � track product impressions
+- `GET /api/stores/:sellerId` � seller store overview & product listing
+- `PATCH /api/users/profile`, `GET /api/users/suggestions` � profile management & discovery
+
+Swagger documentation is available at `/api-docs` once the server is running.
 
 ## Testing
 
-Run the test suite:
+Run the automated test suite:
 
 ```bash
 npm test
 ```
 
-Run tests with coverage:
+Generate a coverage report:
 
 ```bash
 npm run test:coverage
 ```
+
+Manual testing flows for buyers, sellers, and admins are documented in `docs/roles-testing.md`.
 
 ## Production
 
@@ -102,7 +112,7 @@ Build the project:
 npm run build
 ```
 
-Start the production server:
+Start the compiled server:
 
 ```bash
 npm run start:prod
@@ -110,15 +120,15 @@ npm run start:prod
 
 ## Environment Variables
 
-See `.env.example` for all required environment variables.
+Consult `.env.example` for the full list of required environment variables.
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
+2. Create a feature branch
 3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+4. Push to your fork
+5. Open a pull request
 
 ## License
 

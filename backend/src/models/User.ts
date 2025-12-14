@@ -17,6 +17,14 @@ const userSchema = new Schema<IUserDocument>(
       required: [true, "Name is required"],
       trim: true,
     },
+    firstName: {
+      type: String,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -48,6 +56,34 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       match: [/^\+?[\d\s-]+$/, "Please enter a valid phone number"],
       sparse: true,
+    },
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
+    locationCity: {
+      type: String,
+      trim: true,
+    },
+    locationCountry: {
+      type: String,
+      trim: true,
+    },
+    educationSchool: {
+      type: String,
+      trim: true,
+    },
+    educationCollege: {
+      type: String,
+      trim: true,
+    },
+    profileImageUrl: {
+      type: String,
+      trim: true,
     },
     isVerified: {
       type: Boolean,

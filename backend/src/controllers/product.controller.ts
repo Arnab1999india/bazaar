@@ -45,6 +45,43 @@ export class ProductController {
     }
   }
 
+  async getProductVariants(req: Request, res: Response) {
+    try {
+      const variants = await ProductService.getProductVariants(req.params.id);
+      res.json({ success: true, data: variants });
+    } catch (error: any) {
+      if (error.message === "Product not found") {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
+      }
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch variants" });
+    }
+  }
+
+  async getRecommendations(req: Request, res: Response) {
+    try {
+      const limit = Number(req.query.limit) || 8;
+      const products = await ProductService.getRecommendations(
+        req.params.id,
+        limit
+      );
+      res.json({ success: true, data: products });
+    } catch (error: any) {
+      if (error.message === "Product not found") {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
+      }
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch recommendations",
+      });
+    }
+  }
+
   /**
    * Create a new product
    * @route POST /api/products

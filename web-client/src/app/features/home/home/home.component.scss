@@ -1,0 +1,268 @@
+// Variables for consistent theming
+$primary-blue: #1a3c6d;
+$dark-blue: #0f3460;
+$accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$bg-gray: #eaeded;
+$white: #ffffff;
+$text-dark: #333;
+
+// Global Reset for this component context
+* {
+  box-sizing: border-box;
+}
+
+// --- 1. Top Hero Section (Welcome Banner) ---
+.hero-section {
+  background: $accent-gradient;
+  color: $white;
+  padding: 4rem 1rem;
+  text-align: center;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .cta-btn {
+    padding: 0.8rem 2.5rem;
+    background: $white;
+    color: #764ba2;
+    border: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// --- 2. Main Content Area (Amazon-style Grid) ---
+.home-container {
+  background-color: $bg-gray;
+  padding-bottom: 2rem;
+  min-height: auto; // Allow it to grow based on content
+
+  // Section Header within Home Container
+  .hero {
+    padding: 1.5rem 2rem 0.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    h1 {
+      font-size: 2rem;
+      color: $text-dark;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .shop-now-btn {
+      display: none; // Often hidden on mobile, shown if needed
+      @media (min-width: 768px) {
+        display: block;
+        background-color: $primary-blue;
+        color: $white;
+        border: none;
+        padding: 0.5rem 1.2rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        &:hover {
+          background-color: $dark-blue;
+        }
+      }
+    }
+  }
+
+  // The Card Grid
+  .grid-section {
+    display: grid;
+    // Auto-fit ensures responsiveness: 4 columns on large screens, dropping down on smaller
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    .card {
+      background: $white;
+      padding: 1.5rem;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      height: 100%; // Fill grid cell height
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: box-shadow 0.2s;
+
+      &:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: $text-dark;
+        font-weight: 700;
+      }
+
+      .image-container {
+        flex-grow: 1; // Pushes content to top/bottom
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+
+        img {
+          max-width: 100%;
+          max-height: 220px;
+          object-fit: contain;
+          transition: transform 0.3s;
+        }
+      }
+
+      // Zoom effect on hover
+      &:hover .image-container img {
+        transform: scale(1.05);
+      }
+
+      .card-link {
+        background-color: $primary-blue;
+        color: $white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        align-self: flex-start;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+
+        &:hover {
+          background-color: $dark-blue;
+        }
+      }
+    }
+  }
+
+  // Blue Discover Bar
+  .discover-bar {
+    background-color: $primary-blue;
+    color: $white;
+    text-align: center;
+    padding: 2rem;
+    margin-top: 2rem;
+
+    h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+// --- 3. Extra Categories Section ---
+.categories {
+  padding: 4rem 0;
+  background-color: $white;
+
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: $text-dark;
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+
+    .card {
+      padding: 3rem;
+      background: #f8f9fa;
+      text-align: center;
+      border-radius: 12px;
+      font-weight: 600;
+      color: $text-dark;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #e9ecef;
+      }
+    }
+  }
+}
+
+// --- 4. Featured/Trending Section ---
+.featured {
+  background-color: #f4f6f8;
+  padding: 4rem 0;
+  text-align: center;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #666;
+    font-style: italic;
+  }
+}
+
+// --- Responsive Adjustments ---
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  .home-container {
+    .hero {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .shop-now-btn {
+        display: block; // Show button on mobile in new row
+      }
+    }
+
+    .grid-section {
+      padding: 1rem;
+      grid-template-columns: 1fr; // Stack cards on mobile
+    }
+  }
+}
