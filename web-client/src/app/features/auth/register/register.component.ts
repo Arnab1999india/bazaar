@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -20,13 +21,31 @@ export class RegisterComponent {
   registerForm: FormGroup;
   showPassword = false;
   showConfirmPassword = false;
+  isSubmitting = false;
+  errorMessage = '';
+  private readonly passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.registerForm = this.fb.group(
       {
-        name: ['', [Validators.required, Validators.minLength(2)]],
+        name: [
+          '',
+          [Validators.required, Validators.minLength(2), Validators.maxLength(50)],
+        ],
         email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(6),
+            Validators.maxLength(128),
+            Validators.pattern(this.passwordPattern),
+          ],
+        ],
         confirmPassword: ['', [Validators.required]],
         terms: [false, [Validators.requiredTrue]],
       },
@@ -62,10 +81,32 @@ export class RegisterComponent {
   }
 
   onSubmit() {
-    if (this.registerForm.valid) {
-      console.log('Register form submitted', this.registerForm.value);
-      // TODO: Implement register logic
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
     }
+
+    const { name, email, password } = this.registerForm.value;
+    const payload = {
+      name: String(name ?? '').trim(),
+      email: String(email ?? '').trim().toLowerCase(),
+      password: String(password ?? ''),
+    };
+    this.isSubmitting = true;
+    this.errorMessage = '';
+
+    this.authService.register(payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.router.navigate(['/auth/login']);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage =
+          err?.error?.message ||
+          'Unable to create your account right now. Please try again.';
+      },
+    });
   }
 
   navigateToLogin() {

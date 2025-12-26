@@ -23,8 +23,21 @@
     </div>
 
     <div class="nav-links">
-      <a routerLink="/auth/register" class="sign-up">Sign up</a>
-      <a routerLink="/auth/login" class="sign-in">Sign in</a>
+      <ng-container *ngIf="isLoggedIn$ | async; else authLinks">
+        <a routerLink="/products" class="sign-in">Products</a>
+        <a routerLink="/checkout" class="sign-in">
+          Cart ({{ cartCount$ | async }})
+        </a>
+        <a routerLink="/profile" class="sign-in">Profile</a>
+        <button type="button" class="sign-up" (click)="logout()">
+          Logout
+        </button>
+      </ng-container>
+      <ng-template #authLinks>
+        <a routerLink="/products" class="sign-in">Products</a>
+        <a routerLink="/auth/register" class="sign-up">Sign up</a>
+        <a routerLink="/auth/login" class="sign-in">Sign in</a>
+      </ng-template>
     </div>
   </div>
 

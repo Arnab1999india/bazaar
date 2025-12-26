@@ -1,0 +1,60 @@
+ .profile-page {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.profile-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 2rem;
+  width: min(720px, 100%);
+}
+
+.profile-details {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-details .label {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-details .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.change-password {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-control {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  padding: 0.75rem;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.85rem;
+}

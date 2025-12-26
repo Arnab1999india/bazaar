@@ -1,0 +1,123 @@
+<section class="profile-page">
+  <div class="profile-card" *ngIf="user; else loadingState">
+    <h2>Profile</h2>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <div class="profile-details">
+      <div>
+        <span class="label">Name</span>
+        <span class="value">{{ user.name }}</span>
+      </div>
+      <div>
+        <span class="label">Email</span>
+        <span class="value">{{ user.email }}</span>
+      </div>
+      <div *ngIf="user.role">
+        <span class="label">Role</span>
+        <span class="value">{{ user.role }}</span>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <button class="btn btn-secondary" type="button" (click)="logout()">
+        Logout
+      </button>
+    </div>
+
+    <div class="change-password">
+      <h3>Change Password</h3>
+      <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input
+            id="currentPassword"
+            type="password"
+            formControlName="currentPassword"
+            class="form-control"
+          />
+          <div
+            class="error"
+            *ngIf="
+              passwordForm.get('currentPassword')?.invalid &&
+              passwordForm.get('currentPassword')?.touched
+            "
+          >
+            <span *ngIf="passwordForm.get('currentPassword')?.errors?.['required']"
+              >Current password is required</span
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input
+            id="newPassword"
+            type="password"
+            formControlName="newPassword"
+            class="form-control"
+          />
+          <div
+            class="error"
+            *ngIf="
+              passwordForm.get('newPassword')?.invalid &&
+              passwordForm.get('newPassword')?.touched
+            "
+          >
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.['required']"
+              >New password is required</span
+            >
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']"
+              >Password must be at least 6 characters</span
+            >
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.['maxlength']"
+              >Password cannot exceed 128 characters</span
+            >
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.['pattern']"
+              >Include uppercase, lowercase, and a number</span
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            class="form-control"
+          />
+          <div
+            class="error"
+            *ngIf="
+              passwordForm.get('confirmPassword')?.invalid &&
+              passwordForm.get('confirmPassword')?.touched
+            "
+          >
+            <span
+              *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']"
+              >Confirm password is required</span
+            >
+            <span
+              *ngIf="passwordForm.get('confirmPassword')?.errors?.['mustMatch']"
+              >Passwords must match</span
+            >
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="passwordForm.invalid || isChangingPassword"
+        >
+          {{ isChangingPassword ? 'Updating...' : 'Change Password' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<ng-template #loadingState>
+  <div class="profile-card">
+    <h2>Profile</h2>
+    <p *ngIf="isLoading">Loading profile...</p>
+  </div>
+</ng-template>

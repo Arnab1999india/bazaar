@@ -2,13 +2,13 @@
   <div class="container">
     <h1>Welcome to Bazaar</h1>
     <p>Discover the best trends in fashion, electronics, and more.</p>
-    <button class="cta-btn">Shop Now</button>
+    <button class="cta-btn" (click)="handleShopNow()">Shop Now</button>
   </div>
 </section>
 <div class="home-container">
   <section class="hero">
     <h1>Shop the latest deals</h1>
-    <button class="shop-now-btn">Shop now</button>
+    <button class="shop-now-btn" (click)="handleShopNow()">Shop now</button>
   </section>
 
   <section class="grid-section">
@@ -23,7 +23,9 @@
         />
       </div>
 
-      <button class="card-link">{{ cat.link }}</button>
+      <button class="card-link" (click)="handleShopNow()">
+        {{ cat.link }}
+      </button>
     </div>
   </section>
 

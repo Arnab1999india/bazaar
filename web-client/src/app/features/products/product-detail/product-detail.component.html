@@ -1,0 +1,33 @@
+<section class="product-detail" *ngIf="!isLoading; else loadingState">
+  <p class="hint" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <div class="product-layout" *ngIf="product">
+    <div class="gallery">
+      <img
+        [src]="product.imageUrl?.[0] || 'https://via.placeholder.com/720x520?text=Product'"
+        [alt]="product.name"
+      />
+    </div>
+    <div class="info">
+      <h2>{{ product.name }}</h2>
+      <p class="meta">{{ product.brand }} • {{ product.category }}</p>
+      <p class="price">₹{{ product.price | number: '1.0-0' }}</p>
+      <p class="description">
+        {{ product.description || 'No description available yet.' }}
+      </p>
+      <p class="delivery">{{ deliveryEstimate }}</p>
+
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" (click)="addToCart()">
+          Add to Cart
+        </button>
+        <button type="button" class="btn btn-primary" (click)="buyNow()">
+          Buy Now
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ng-template #loadingState>
+  <div class="product-detail loading">Loading product...</div>
+</ng-template>

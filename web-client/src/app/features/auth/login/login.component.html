@@ -1,6 +1,7 @@
 <div class="login-container">
   <div class="login-card">
     <h2>Sign In</h2>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="email">Email</label>
@@ -98,9 +99,9 @@
       <button
         type="submit"
         class="btn btn-primary"
-        [disabled]="loginForm.invalid"
+        [disabled]="loginForm.invalid || isLoading"
       >
-        Sign In
+        {{ isLoading ? 'Signing in...' : 'Sign In' }}
       </button>
     </form>
 

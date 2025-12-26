@@ -1,0 +1,28 @@
+<div class="product-card">
+  <div class="product-image">
+    <img
+      [src]="product.imageUrl?.[0] || 'https://via.placeholder.com/320x240?text=Product'"
+      [alt]="product.name"
+    />
+  </div>
+  <div class="product-body">
+    <h3>{{ product.name }}</h3>
+    <p class="meta">{{ product.brand }} • {{ product.category }}</p>
+    <p class="price">₹{{ product.price | number: '1.0-0' }}</p>
+  </div>
+  <div class="product-actions">
+    <button type="button" class="btn btn-secondary" (click)="view.emit(product)">
+      View
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="addToCart.emit(product)"
+    >
+      Add to Cart
+    </button>
+    <button type="button" class="btn btn-ghost" (click)="buyNow.emit(product)">
+      Buy Now
+    </button>
+  </div>
+</div>
