@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
   AbstractControl,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { AuthUser } from '../../core/models/api.models';
@@ -15,7 +15,7 @@ import { AuthUser } from '../../core/models/api.models';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })

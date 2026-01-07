@@ -7,6 +7,27 @@ export const AUTH_ROUTES: Routes = [
       import('./login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'admin-login',
+    loadComponent: () =>
+      import('./admin-login/admin-login.component').then(
+        (m) => m.AdminLoginComponent
+      ),
+  },
+  {
+    path: 'seller-login',
+    loadComponent: () =>
+      import('./seller-login/seller-login.component').then(
+        (m) => m.SellerLoginComponent
+      ),
+  },
+  {
+    path: 'seller-register',
+    loadComponent: () =>
+      import('../seller-onboarding/seller-register/seller-register.component').then(
+        (m) => m.SellerRegisterComponent
+      ),
+  },
+  {
     path: 'register',
     loadComponent: () =>
       import('./register/register.component').then((m) => m.RegisterComponent),

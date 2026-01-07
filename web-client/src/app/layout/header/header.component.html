@@ -28,6 +28,18 @@
         <a routerLink="/checkout" class="sign-in">
           Cart ({{ cartCount$ | async }})
         </a>
+        <a
+          *ngIf="(user$ | async)?.role === 'admin'"
+          routerLink="/admin"
+          class="sign-in"
+          >Admin</a
+        >
+        <a
+          *ngIf="(user$ | async)?.role === 'seller'"
+          routerLink="/seller"
+          class="sign-in"
+          >Seller</a
+        >
         <a routerLink="/profile" class="sign-in">Profile</a>
         <button type="button" class="sign-up" (click)="logout()">
           Logout
@@ -35,6 +47,8 @@
       </ng-container>
       <ng-template #authLinks>
         <a routerLink="/products" class="sign-in">Products</a>
+        <a routerLink="/auth/admin-login" class="sign-in">Admin</a>
+        <a routerLink="/auth/seller-login" class="sign-in">Seller</a>
         <a routerLink="/auth/register" class="sign-up">Sign up</a>
         <a routerLink="/auth/login" class="sign-in">Sign in</a>
       </ng-template>

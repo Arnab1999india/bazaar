@@ -9,6 +9,7 @@ import {
   ApiResponse,
   AuthResponse,
   AuthTokens,
+  AuthUser,
   LoginPayload,
   RegisterPayload,
 } from '../models/api.models';
@@ -16,10 +17,15 @@ import {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly storageKey = 'bazaar.auth';
+  private readonly userKey = 'bazaar.user';
   private readonly authStateSubject = new BehaviorSubject<boolean>(
     this.hasTokens()
   );
   readonly authState$ = this.authStateSubject.asObservable();
+  private readonly userSubject = new BehaviorSubject<AuthUser | null>(
+    this.getStoredUser()
+  );
+  readonly user$ = this.userSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -41,8 +47,7 @@ export class AuthService {
       )
       .pipe(
         tap((res) => {
-          this.persistTokens(res.data.tokens, remember);
-          this.authStateSubject.next(true);
+          this.persistSession(res.data, remember);
         })
       );
   }
@@ -112,8 +117,7 @@ export class AuthService {
       )
       .pipe(
         tap(() => {
-          this.clearTokens();
-          this.authStateSubject.next(false);
+          this.clearSession();
         })
       );
   }
@@ -160,11 +164,15 @@ export class AuthService {
   }
 
   signOut(): void {
-    this.clearTokens();
+    this.clearSession();
   }
 
   isAuthenticated(): boolean {
     return this.hasTokens();
+  }
+
+  getCurrentUser(): AuthUser | null {
+    return this.userSubject.value;
   }
 
   private hasTokens(): boolean {
@@ -172,5 +180,33 @@ export class AuthService {
       localStorage.getItem(this.storageKey) ??
       sessionStorage.getItem(this.storageKey);
     return Boolean(stored);
+  }
+
+  private persistSession(response: AuthResponse, remember = true): void {
+    this.persistTokens(response.tokens, remember);
+    this.persistUser(response.user, remember);
+    this.authStateSubject.next(true);
+  }
+
+  private persistUser(user: AuthUser, remember = true): void {
+    localStorage.removeItem(this.userKey);
+    sessionStorage.removeItem(this.userKey);
+    const targetStorage = remember ? localStorage : sessionStorage;
+    targetStorage.setItem(this.userKey, JSON.stringify(user));
+    this.userSubject.next(user);
+  }
+
+  private clearSession(): void {
+    this.clearTokens();
+    localStorage.removeItem(this.userKey);
+    sessionStorage.removeItem(this.userKey);
+    this.userSubject.next(null);
+  }
+
+  private getStoredUser(): AuthUser | null {
+    const stored =
+      localStorage.getItem(this.userKey) ??
+      sessionStorage.getItem(this.userKey);
+    return stored ? (JSON.parse(stored) as AuthUser) : null;
   }
 }

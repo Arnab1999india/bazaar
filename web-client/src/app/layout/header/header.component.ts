@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { CartService } from '../../core/services/cart.service';
 
@@ -13,16 +13,21 @@ import { CartService } from '../../core/services/cart.service';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  isLoggedIn$ = this.authService.authState$;
-  cartCount$ = this.cartService.cartItems$.pipe(
-    map((items) => items.reduce((total, item) => total + item.quantity, 0))
-  );
+  isLoggedIn$: Observable<boolean>;
+  cartCount$: Observable<number>;
+  user$!: Observable<import('../../core/models/api.models').AuthUser | null>;
 
   constructor(
     private authService: AuthService,
     private cartService: CartService,
     private router: Router
-  ) {}
+  ) {
+    this.isLoggedIn$ = this.authService.authState$;
+    this.cartCount$ = this.cartService.cartItems$.pipe(
+      map((items) => items.reduce((total, item) => total + item.quantity, 0))
+    );
+    this.user$ = this.authService.user$;
+  }
 
   logout(): void {
     this.authService.logout().subscribe({

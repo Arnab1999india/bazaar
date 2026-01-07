@@ -1,0 +1,22 @@
+.seller-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.seller-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  flex: 1;
+}
+
+.seller-content {
+  padding: 2rem;
+}
+
+@media (max-width: 900px) {
+  .seller-body {
+    grid-template-columns: 1fr;
+  }
+}
