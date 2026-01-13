@@ -1,4 +1,24 @@
 <section class="dashboard">
-  <h2>Welcome to your seller account dashboard</h2>
-  <p>Track orders, manage listings, and optimize your storefront.</p>
+  <div class="dashboard-header">
+    <div>
+      <h2>Welcome to your seller account dashboard</h2>
+      <p>Track orders, manage listings, and optimize your storefront.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/seller/products/new">Add Product</a>
+  </div>
+
+  <section class="dashboard-section">
+    <div class="section-header">
+      <div>
+        <h3>My Products</h3>
+        <p>Review, edit, and manage everything you are selling.</p>
+      </div>
+      <a class="btn btn-secondary" routerLink="/seller/products">View All</a>
+    </div>
+    <div class="section-actions">
+      <a class="btn btn-ghost" routerLink="/seller/products/new">
+        Add Another Product
+      </a>
+    </div>
+  </section>
 </section>

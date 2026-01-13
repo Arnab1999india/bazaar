@@ -26,6 +26,7 @@ export class EmailService {
         html,
       });
     } catch (error) {
+      console.error("EmailService sendMail failed:", error);
       throw new AppError(ErrorType.INTERNAL, "Failed to send email", 500);
     }
   }

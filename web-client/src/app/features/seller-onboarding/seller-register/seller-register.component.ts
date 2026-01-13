@@ -8,12 +8,7 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-
-type BusinessType =
-  | 'individual'
-  | 'partnership'
-  | 'pvt_ltd_llp'
-  | 'registered_company';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-seller-register',
@@ -24,17 +19,17 @@ type BusinessType =
 })
 export class SellerRegisterComponent {
   form: FormGroup;
-  otpSent = false;
-  otpVerified = false;
   isSubmitting = false;
-  isSendingOtp = false;
+  showPassword = false;
+  showConfirmPassword = false;
   errorMessage = '';
   successMessage = '';
   private readonly passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/;
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.form = this.fb.group(
       {
@@ -55,7 +50,6 @@ export class SellerRegisterComponent {
         ],
         confirmPassword: ['', [Validators.required]],
         businessType: ['individual', [Validators.required]],
-        otp: [''],
         acceptTerms: [false, [Validators.requiredTrue]],
       },
       { validators: this.passwordMatchValidator }
@@ -81,32 +75,22 @@ export class SellerRegisterComponent {
     return null;
   }
 
-  sendOtp(): void {
-    if (this.form.get('email')?.invalid) {
-      this.form.get('email')?.markAsTouched();
+  togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
+    if (field === 'password') {
+      this.showPassword = !this.showPassword;
       return;
     }
-    this.isSendingOtp = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    const email = String(this.form.value.email ?? '').trim().toLowerCase();
-    setTimeout(() => {
-      this.otpSent = true;
-      this.isSendingOtp = false;
-      this.successMessage = `OTP sent to ${email}`;
-    }, 600);
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  verifyOtp(): void {
-    const otp = String(this.form.value.otp ?? '').trim();
-    if (!otp || otp.length < 4) {
-      this.errorMessage = 'Enter the OTP to verify your email.';
-      return;
-    }
-    this.otpVerified = true;
-    this.errorMessage = '';
-    this.successMessage = 'Email verified successfully.';
+  private buildRegistrationPayload() {
+    return {
+      name: String(this.form.value.fullName ?? '').trim(),
+      email: String(this.form.value.email ?? '').trim().toLowerCase(),
+      phone: String(this.form.value.mobile ?? '').trim(),
+      password: String(this.form.value.password ?? ''),
+      role: 'seller' as const,
+    };
   }
 
   createAccount(): void {
@@ -114,28 +98,27 @@ export class SellerRegisterComponent {
       this.form.markAllAsTouched();
       return;
     }
-    if (!this.otpVerified) {
-      this.errorMessage = 'Please verify your email OTP first.';
-      return;
-    }
 
     this.isSubmitting = true;
     this.errorMessage = '';
     this.successMessage = '';
 
-    const payload = {
-      fullName: String(this.form.value.fullName ?? '').trim(),
-      email: String(this.form.value.email ?? '').trim().toLowerCase(),
-      mobile: String(this.form.value.mobile ?? '').trim(),
-      password: String(this.form.value.password ?? ''),
-      businessType: this.form.value.businessType as BusinessType,
-      sellerStatus: 'pending_profile',
-    };
-
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.successMessage = 'Seller account created. Continue onboarding.';
-      this.router.navigate(['/seller']);
-    }, 600);
+    const payload = this.buildRegistrationPayload();
+    this.authService.initiateRegistration(payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.successMessage =
+          'Account created. Please verify the OTP sent to your email.';
+        this.router.navigate(['/auth/otp-validation'], {
+          queryParams: { email: payload.email, purpose: 'registration' },
+        });
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage =
+          err?.error?.message ||
+          'Unable to create your account right now. Please try again.';
+      },
+    });
   }
 }
