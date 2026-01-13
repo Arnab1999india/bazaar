@@ -35,6 +35,14 @@ export interface RegisterPayload {
   password: string;
 }
 
+export interface RegistrationInitiatePayload {
+  name: string;
+  email: string;
+  password: string;
+  role?: 'buyer' | 'seller' | 'admin' | 'customer';
+  phone?: string;
+}
+
 export interface AuthResponse {
   user: AuthUser;
   tokens: AuthTokens;
@@ -56,8 +64,10 @@ export interface Product {
   imageUrl?: string[];
   rating?: number;
   stockStatus?: string;
+  totalStock?: number;
   tags?: string[];
   attributes?: ProductAttribute[];
+  variants?: ProductVariant[];
 }
 
 export interface ProductVariant {

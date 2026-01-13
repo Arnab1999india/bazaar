@@ -12,6 +12,7 @@ import {
   AuthUser,
   LoginPayload,
   RegisterPayload,
+  RegistrationInitiatePayload,
 } from '../models/api.models';
 
 @Injectable({ providedIn: 'root' })
@@ -32,6 +33,15 @@ export class AuthService {
   register(payload: RegisterPayload): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.register}`,
+      payload
+    );
+  }
+
+  initiateRegistration(
+    payload: RegistrationInitiatePayload
+  ): Observable<ApiResponse<{ message: string }>> {
+    return this.http.post<ApiResponse<{ message: string }>>(
+      `${API_BASE_URL}${API_ENDPOINTS.auth.initiateRegistration}`,
       payload
     );
   }
@@ -165,6 +175,20 @@ export class AuthService {
 
   signOut(): void {
     this.clearSession();
+  }
+
+  persistSessionFromToken(
+    user: AuthUser,
+    token: string,
+    remember = true
+  ): void {
+    this.persistSession(
+      {
+        user,
+        tokens: { accessToken: token },
+      },
+      remember
+    );
   }
 
   isAuthenticated(): boolean {

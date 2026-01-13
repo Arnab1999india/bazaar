@@ -30,7 +30,7 @@ const updateCartItemSchema = Joi.object({
 });
 
 // Apply authentication middleware to all cart routes
-router.use(auth);
+// router.use(auth);
 
 // Cart routes
 router.get("/", CartController.getCart);

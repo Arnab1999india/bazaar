@@ -34,17 +34,24 @@
   padding: 0.75rem;
 }
 
-.otp-row {
-  display: grid;
-  gap: 0.75rem;
-  align-items: end;
-  grid-template-columns: 1fr repeat(2, auto) auto;
-  margin-bottom: 1rem;
+.input-with-action {
+  position: relative;
 }
 
-.otp-status {
-  color: #16a34a;
+.input-with-action .form-control {
+  padding-right: 4.25rem;
+}
+
+.toggle-visibility {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #0f172a;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .checkbox {
@@ -84,10 +91,4 @@
 
 .success {
   color: #16a34a;
-}
-
-@media (max-width: 720px) {
-  .otp-row {
-    grid-template-columns: 1fr;
-  }
 }
