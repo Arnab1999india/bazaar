@@ -1,0 +1,32 @@
+<section class="products">
+  <div class="header">
+    <h2>Your Products</h2>
+    <a routerLink="/seller/products/new" class="btn btn-primary">Add Product</a>
+  </div>
+
+  <table class="product-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products">
+        <td>{{ product.name }}</td>
+        <td>₹{{ product.price }}</td>
+        <td>{{ product.stock }}</td>
+        <td class="actions">
+          <button class="btn btn-secondary" (click)="editProduct(product.id)">
+            Edit
+          </button>
+          <button class="btn btn-ghost" (click)="deleteProduct(product.id)">
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

@@ -1,0 +1,82 @@
+<section class="seller-register">
+  <div class="card">
+    <h2>Create Seller Account</h2>
+    <p class="subtitle">Start selling on Bazaar in a few simple steps.</p>
+
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+
+    <form [formGroup]="form" (ngSubmit)="createAccount()">
+      <div class="form-group">
+        <label for="fullName">Full Name (Owner/Primary Contact)</label>
+        <input id="fullName" formControlName="fullName" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label for="mobile">Mobile Number</label>
+        <input id="mobile" formControlName="mobile" class="form-control" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" type="password" formControlName="password" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input id="confirmPassword" type="password" formControlName="confirmPassword" class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="businessType">Business Type</label>
+        <select id="businessType" formControlName="businessType" class="form-control">
+          <option value="individual">Individual / Sole Proprietor</option>
+          <option value="partnership">Partnership</option>
+          <option value="pvt_ltd_llp">Pvt Ltd / LLP</option>
+          <option value="registered_company">Registered Company</option>
+        </select>
+      </div>
+
+      <div class="otp-row">
+        <div class="form-group">
+          <label for="otp">OTP</label>
+          <input id="otp" formControlName="otp" class="form-control" />
+        </div>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="sendOtp()"
+          [disabled]="isSendingOtp"
+        >
+          {{ isSendingOtp ? 'Sending...' : 'Send OTP' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost"
+          (click)="verifyOtp()"
+          [disabled]="!otpSent"
+        >
+          Verify OTP
+        </button>
+        <span class="otp-status" *ngIf="otpVerified">Verified</span>
+      </div>
+
+      <div class="form-group checkbox">
+        <input id="acceptTerms" type="checkbox" formControlName="acceptTerms" />
+        <label for="acceptTerms">
+          I agree to the Terms & Seller Agreement
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Creating...' : 'Create Account' }}
+      </button>
+    </form>
+  </div>
+</section>

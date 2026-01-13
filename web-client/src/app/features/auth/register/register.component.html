@@ -1,6 +1,7 @@
 <div class="register-container">
   <div class="register-card">
     <h2>Sign Up</h2>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="name">Full Name</label>
@@ -23,6 +24,9 @@
           >
           <span *ngIf="registerForm.get('name')?.errors?.['minlength']"
             >Name must be at least 2 characters</span
+          >
+          <span *ngIf="registerForm.get('name')?.errors?.['maxlength']"
+            >Name cannot exceed 50 characters</span
           >
         </div>
       </div>
@@ -113,6 +117,12 @@
           <span *ngIf="registerForm.get('password')?.errors?.['minlength']"
             >Password must be at least 6 characters</span
           >
+          <span *ngIf="registerForm.get('password')?.errors?.['maxlength']"
+            >Password cannot exceed 128 characters</span
+          >
+          <span *ngIf="registerForm.get('password')?.errors?.['pattern']"
+            >Include uppercase, lowercase, and a number</span
+          >
         </div>
       </div>
 
@@ -202,9 +212,9 @@
       <button
         type="submit"
         class="btn btn-primary"
-        [disabled]="registerForm.invalid"
+        [disabled]="registerForm.invalid || isSubmitting"
       >
-        Sign Up
+        {{ isSubmitting ? 'Creating account...' : 'Sign Up' }}
       </button>
     </form>
 

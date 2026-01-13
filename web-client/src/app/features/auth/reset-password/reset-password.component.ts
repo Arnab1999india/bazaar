@@ -6,8 +6,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -20,11 +21,31 @@ export class ResetPasswordComponent {
   resetPasswordForm: FormGroup;
   showPassword = false;
   showConfirmPassword = false;
+  isSubmitting = false;
+  errorMessage = '';
+  private email = '';
+  private readonly passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private authService: AuthService
+  ) {
+    this.route.queryParams.subscribe((params) => {
+      this.email = String(params['email'] ?? '').trim().toLowerCase();
+    });
     this.resetPasswordForm = this.fb.group(
       {
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(6),
+            Validators.maxLength(128),
+            Validators.pattern(this.passwordPattern),
+          ],
+        ],
         confirmPassword: ['', [Validators.required]],
       },
       { validators: this.passwordMatchValidator }
@@ -61,10 +82,30 @@ export class ResetPasswordComponent {
   }
 
   onSubmit() {
-    if (this.resetPasswordForm.valid) {
-      console.log('Reset password submitted', this.resetPasswordForm.value);
-      // TODO: Hook up to backend reset password API
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
     }
+    if (!this.email) {
+      this.errorMessage = 'Missing email address for password reset.';
+      return;
+    }
+
+    const newPassword = String(this.resetPasswordForm.value.password ?? '');
+    this.isSubmitting = true;
+    this.errorMessage = '';
+
+    this.authService.resetPassword({ email: this.email, newPassword }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.router.navigate(['/auth/login']);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage =
+          err?.error?.message || 'Unable to reset password. Please try again.';
+      },
+    });
   }
 
   navigateToLogin() {

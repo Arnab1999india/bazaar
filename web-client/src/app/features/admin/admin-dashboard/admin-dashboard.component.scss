@@ -1,0 +1,27 @@
+.dashboard {
+  padding: 2rem 1.5rem;
+}
+
+.stats {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.label {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f172a;
+}

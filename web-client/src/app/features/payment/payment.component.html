@@ -1,0 +1,66 @@
+<section class="payment" *ngIf="checkoutState">
+  <h2>Payment</h2>
+  <div class="payment-layout">
+    <div class="panel">
+      <h3>Delivery Address</h3>
+      <p>{{ checkoutState.address?.fullName }}</p>
+      <p>{{ checkoutState.address?.line1 }}</p>
+      <p *ngIf="checkoutState.address?.line2">
+        {{ checkoutState.address?.line2 }}
+      </p>
+      <p>
+        {{ checkoutState.address?.city }},
+        {{ checkoutState.address?.state }}
+        {{ checkoutState.address?.postalCode }}
+      </p>
+      <p>{{ checkoutState.address?.phone }}</p>
+    </div>
+
+    <div class="panel">
+      <h3>Order Items</h3>
+      <div class="item" *ngFor="let item of checkoutState.items">
+        <div>
+          <p class="title">{{ item.product.name }}</p>
+          <p class="meta">Qty: {{ item.quantity }}</p>
+        </div>
+        <p class="price">₹{{ item.product.price * item.quantity }}</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Payment Summary</h3>
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>₹{{ checkoutState.totals.subtotal }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Delivery</span>
+        <span>₹{{ checkoutState.totals.deliveryCharge }}</span>
+      </div>
+      <div class="summary-row" *ngIf="checkoutState.totals.discount">
+        <span>Promo</span>
+        <span>-₹{{ checkoutState.totals.discount }}</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span>₹{{ checkoutState.totals.total }}</span>
+      </div>
+
+      <form [formGroup]="promoForm" class="promo">
+        <input
+          type="text"
+          placeholder="Promo code"
+          formControlName="code"
+        />
+        <button type="button" class="btn btn-secondary" (click)="applyPromo()">
+          Apply
+        </button>
+      </form>
+      <p class="promo-message">{{ message }}</p>
+
+      <button type="button" class="btn btn-primary" (click)="payNow()">
+        Pay Now
+      </button>
+    </div>
+  </div>
+</section>

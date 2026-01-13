@@ -15,8 +15,9 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -28,8 +29,15 @@ import { CommonModule } from '@angular/common';
 export class LoginComponent {
   loginForm: FormGroup;
   showPassword = false;
+  isLoading = false;
+  errorMessage = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService,
+    private route: ActivatedRoute
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -42,10 +50,36 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (this.loginForm.valid) {
-      console.log('Login form submitted', this.loginForm.value);
-      // TODO: Implement login logic
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
     }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    const { email, password, rememberMe } = this.loginForm.value;
+    const payload = {
+      email: String(email ?? '').trim().toLowerCase(),
+      password: String(password ?? ''),
+    };
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    this.authService.login(payload, rememberMe).subscribe({
+      next: () => {
+        this.isLoading = false;
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
+          return;
+        }
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage =
+          err?.error?.message || 'Unable to sign in. Please try again.';
+      },
+    });
   }
 
   navigateToForgotPassword() {

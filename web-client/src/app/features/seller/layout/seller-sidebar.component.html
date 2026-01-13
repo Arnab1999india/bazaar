@@ -1,0 +1,49 @@
+<aside class="seller-sidebar">
+  <nav>
+    <ul>
+      <li *ngFor="let item of menu">
+        <div class="menu-item">
+          <a *ngIf="item.route" [routerLink]="item.route" routerLinkActive="active">
+            {{ item.label }}
+          </a>
+          <button *ngIf="!item.route" type="button" (click)="toggle(item)">
+            {{ item.label }}
+            <span class="chevron">{{ item.expanded ? '▾' : '▸' }}</span>
+          </button>
+        </div>
+        <ul *ngIf="item.children && item.expanded" class="submenu">
+          <li *ngFor="let child of item.children">
+            <div class="menu-item">
+              <a
+                *ngIf="child.route"
+                [routerLink]="child.route"
+                routerLinkActive="active"
+              >
+                {{ child.label }}
+              </a>
+              <button
+                *ngIf="!child.route"
+                type="button"
+                (click)="toggle(child)"
+              >
+                {{ child.label }}
+                <span class="chevron">{{ child.expanded ? '▾' : '▸' }}</span>
+              </button>
+            </div>
+            <ul *ngIf="child.children && child.expanded" class="submenu">
+              <li *ngFor="let grand of child.children">
+                <a
+                  [routerLink]="grand.route"
+                  routerLinkActive="active"
+                  class="sub-link"
+                >
+                  {{ grand.label }}
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</aside>
