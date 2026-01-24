@@ -38,6 +38,28 @@ export const API_ENDPOINTS = {
     overview: (sellerId: string) => `/stores/${sellerId}`,
     catalog: (sellerId: string) => `/stores/${sellerId}/products`,
   },
+  cart: {
+    get: '/cart',
+    add: '/cart/add',
+    updateItem: (productId: string) => `/cart/item/${productId}`,
+    removeItem: (productId: string) => `/cart/item/${productId}`,
+    clear: '/cart/clear',
+    count: '/cart/count',
+  },
+  orders: {
+    create: '/orders',
+    list: '/orders',
+    detail: (orderId: string) => `/orders/${orderId}`,
+  },
+  sellerOrders: {
+    list: '/seller/orders',
+    updateItemStatus: (orderId: string, itemId: string) =>
+      `/seller/orders/${orderId}/items/${itemId}/status`,
+  },
+  payments: {
+    razorpayCreate: '/payments/razorpay/create-order',
+    razorpayVerify: '/payments/razorpay/verify',
+  },
   users: {
     me: '/users/me',
     profile: '/users/profile',

@@ -29,6 +29,8 @@ interface IEnvConfig {
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
   CLIENT_URL: string;
+  RAZORPAY_KEY_ID?: string;
+  RAZORPAY_KEY_SECRET?: string;
 }
 
 const getConfig = (): IEnvConfig => {
@@ -48,6 +50,8 @@ const getConfig = (): IEnvConfig => {
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     CLIENT_URL: process.env.CLIENT_URL,
+    RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
+    RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
   };
 
   // Validate required environment variables
@@ -85,6 +89,8 @@ const getConfig = (): IEnvConfig => {
     CLOUDINARY_API_KEY: config.CLOUDINARY_API_KEY as string,
     CLOUDINARY_API_SECRET: config.CLOUDINARY_API_SECRET as string,
     CLIENT_URL: (config.CLIENT_URL as string) || "http://localhost:3000",
+    RAZORPAY_KEY_ID: config.RAZORPAY_KEY_ID as string | undefined,
+    RAZORPAY_KEY_SECRET: config.RAZORPAY_KEY_SECRET as string | undefined,
   };
 };
 

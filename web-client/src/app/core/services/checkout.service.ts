@@ -8,8 +8,13 @@ export class CheckoutService {
   private readonly stateSubject = new BehaviorSubject<CheckoutState | null>(null);
   readonly state$ = this.stateSubject.asObservable();
 
-  setState(items: CartItem[], totals: OrderTotals, address: DeliveryAddress | null) {
-    this.stateSubject.next({ items, totals, address });
+  setState(
+    items: CartItem[],
+    totals: OrderTotals,
+    address: DeliveryAddress | null,
+    paymentMethod?: string
+  ) {
+    this.stateSubject.next({ items, totals, address, paymentMethod });
   }
 
   updateTotals(totals: OrderTotals, promoCode?: string): void {

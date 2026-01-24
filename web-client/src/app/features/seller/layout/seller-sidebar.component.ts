@@ -38,8 +38,8 @@ export class SellerSidebarComponent {
     {
       label: 'Orders',
       children: [
-        { label: 'All Orders', route: '/seller' },
-        { label: 'Returns', route: '/seller' },
+        { label: 'All Orders', route: '/seller/orders' },
+        { label: 'Returns', route: '/seller/orders' },
       ],
     },
     {

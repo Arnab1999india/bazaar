@@ -108,6 +108,83 @@ export interface ProductUpdatePayload
   variants?: ProductVariant[];
 }
 
+// Cart
+export interface CartLineItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface CartResponse {
+  id: string;
+  items: CartLineItem[];
+  totalItems: number;
+  totalAmount: number;
+}
+
+// Orders
+export type OrderItemStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled';
+
+export interface OrderItem {
+  id: string;
+  product: Product;
+  sellerId: string;
+  quantity: number;
+  price: number;
+  itemStatus: OrderItemStatus;
+}
+
+export interface Order {
+  id: string;
+  items: OrderItem[];
+  buyer: { id: string; name: string; email: string } | string;
+  totalAmount: number;
+  status: OrderItemStatus;
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  };
+  paymentStatus: 'pending' | 'completed' | 'failed';
+  paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderCreatePayload {
+  items?: Array<{ productId: string; quantity: number }>;
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  };
+  paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
+}
+
+// Payments
+export interface RazorpayOrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+}
+
 // Stores
 export interface StoreOverview {
   id: string;

@@ -14,5 +14,6 @@ export interface CheckoutState {
   items: CartItem[];
   address: DeliveryAddress | null;
   totals: OrderTotals;
+  paymentMethod?: string;
   promoCode?: string;
 }

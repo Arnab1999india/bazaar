@@ -25,6 +25,10 @@ const createOrderSchema = Joi.object({
     zipCode: Joi.string().required(),
   }).required(),
   paymentMethod: Joi.string().required(),
+  paymentProvider: Joi.string().optional(),
+  paymentId: Joi.string().optional(),
+  paymentSignature: Joi.string().optional(),
+  razorpayOrderId: Joi.string().optional(),
 });
 
 const updateOrderStatusSchema = Joi.object({

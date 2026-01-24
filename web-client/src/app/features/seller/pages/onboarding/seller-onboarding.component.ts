@@ -8,7 +8,13 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SellerService } from '../../../../core/services/seller.service';
-import { SellerProfile, SellerProfileInput } from '../../../../core/models/api.models';
+import {
+  SellerDocument,
+  SellerProfile,
+  SellerProfileInput,
+} from '../../../../core/models/api.models';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-seller-onboarding',
@@ -22,15 +28,18 @@ export class SellerOnboardingComponent implements OnInit {
   profile: SellerProfile | null = null;
   isLoading = true;
   isSubmitting = false;
+  isUploading = false;
   errorMessage = '';
   successMessage = '';
   returnUrl = '/seller';
+  documents: SellerDocument[] = [];
 
   constructor(
     private fb: FormBuilder,
     private sellerService: SellerService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) {
     this.form = this.fb.group({
       businessName: ['', [Validators.required, Validators.minLength(2)]],
@@ -86,6 +95,7 @@ export class SellerOnboardingComponent implements OnInit {
       next: (res) => {
         this.profile = res.data;
         this.patchForm(res.data);
+        this.documents = res.data.kycDocuments ?? [];
         this.isLoading = false;
       },
       error: (err) => {
@@ -170,10 +180,58 @@ export class SellerOnboardingComponent implements OnInit {
       panNumber: raw.panNumber || undefined,
       shopAddress: raw.shopAddress,
       warehouseAddress: hasWarehouse ? raw.warehouseAddress : undefined,
+      kycDocuments: this.documents.length ? this.documents : undefined,
     };
   }
 
   backToDashboard(): void {
     this.router.navigateByUrl(this.returnUrl);
+  }
+
+  onDocumentSelected(event: Event, type: string): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    if (!environment.cloudinaryCloudName || !environment.cloudinaryUploadPreset) {
+      this.errorMessage = 'Cloudinary credentials are not configured.';
+      return;
+    }
+
+    this.isUploading = true;
+    this.errorMessage = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', environment.cloudinaryUploadPreset);
+    formData.append('folder', 'bazaar/kyc');
+
+    this.http
+      .post<{ secure_url?: string; url?: string }>(
+        `https://api.cloudinary.com/v1_1/${environment.cloudinaryCloudName}/upload`,
+        formData
+      )
+      .subscribe({
+        next: (res) => {
+          const url = res.secure_url || res.url;
+          if (url) {
+            this.documents = [
+              ...this.documents,
+              { type, url },
+            ];
+          }
+          this.isUploading = false;
+          target.value = '';
+        },
+        error: () => {
+          this.errorMessage = 'Failed to upload document.';
+          this.isUploading = false;
+          target.value = '';
+        },
+      });
+  }
+
+  removeDocument(index: number): void {
+    this.documents = this.documents.filter((_, i) => i !== index);
   }
 }

@@ -115,6 +115,65 @@
           </div>
         </div>
       </div>
+
+      <div class="address-block">
+        <h3>KYC documents</h3>
+        <p class="helper">
+          Upload business documents (PDF or image). Provide at least one.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="gstDoc">GST certificate</label>
+            <input
+              id="gstDoc"
+              type="file"
+              class="form-control"
+              accept="image/*,application/pdf"
+              (change)="onDocumentSelected($event, 'gst')"
+            />
+          </div>
+          <div class="form-group">
+            <label for="panDoc">PAN card</label>
+            <input
+              id="panDoc"
+              type="file"
+              class="form-control"
+              accept="image/*,application/pdf"
+              (change)="onDocumentSelected($event, 'pan')"
+            />
+          </div>
+          <div class="form-group">
+            <label for="otherDoc">Other document</label>
+            <input
+              id="otherDoc"
+              type="file"
+              class="form-control"
+              accept="image/*,application/pdf"
+              (change)="onDocumentSelected($event, 'other')"
+            />
+          </div>
+        </div>
+
+        <div class="upload-status" *ngIf="isUploading">
+          Uploading document...
+        </div>
+
+        <div class="documents" *ngIf="documents.length">
+          <div class="document" *ngFor="let doc of documents; let i = index">
+            <div>
+              <strong>{{ doc.type | uppercase }}</strong>
+              <a [href]="doc.url" target="_blank">View</a>
+            </div>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              (click)="removeDocument(i)"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
     </fieldset>
 
     <div class="actions">

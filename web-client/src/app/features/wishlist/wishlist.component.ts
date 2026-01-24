@@ -120,7 +120,7 @@ export class WishlistComponent implements OnInit {
   }
 
   addToCart(item: WishlistItem) {
-    this.cartService.addItem(item.product, 1);
+    this.cartService.addItem(item.product, 1).subscribe();
     // Optional: Show toast or feedback
   }
 

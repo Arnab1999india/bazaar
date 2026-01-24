@@ -1,0 +1,51 @@
+<section class="seller-orders">
+  <header class="header">
+    <div>
+      <h2>Seller orders</h2>
+      <p>Track fulfillment and update item status.</p>
+    </div>
+  </header>
+
+  <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div *ngIf="isLoading" class="loading">Loading orders...</div>
+
+  <div class="orders" *ngIf="!isLoading">
+    <article class="order-card" *ngFor="let order of orders">
+      <div class="order-header">
+        <div>
+          <h3>Order {{ order.id }}</h3>
+          <p>Total: {{ order.totalAmount | currency: 'INR' }}</p>
+        </div>
+        <span class="pill">{{ order.status }}</span>
+      </div>
+
+      <div class="items">
+        <div class="item" *ngFor="let item of order.items">
+          <div>
+            <strong>{{ item.product?.name }}</strong>
+            <p>
+              Qty {{ item.quantity }} • ₹{{ item.price }} •
+              Status: {{ item.itemStatus }}
+            </p>
+          </div>
+          <div class="actions">
+            <select
+              [value]="item.itemStatus"
+              (change)="updateItemStatus(order.id, item.id || item._id, $any($event.target).value)"
+            >
+              <option *ngFor="let status of statusOptions" [value]="status">
+                {{ status }}
+              </option>
+            </select>
+            <span *ngIf="updatingItemId === (item.id || item._id)">Updating...</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <div class="empty" *ngIf="orders.length === 0">
+      No orders yet.
+    </div>
+  </div>
+</section>

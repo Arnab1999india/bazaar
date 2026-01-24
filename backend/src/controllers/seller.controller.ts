@@ -2,21 +2,23 @@ import { Request, Response } from "express";
 import { SellerService } from "../services/seller.service";
 
 export class SellerController {
-  static async getMyProfile(req: Request, res: Response) {
+  static async getMyProfile(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
       if (!userId) {
-        return res
+        res
           .status(401)
           .json({ success: false, message: "Authentication required" });
+        return;
       }
 
       const profile = await SellerService.getProfileByUser(userId);
       if (!profile) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: "Seller profile not found",
         });
+        return;
       }
       res.json({ success: true, data: profile });
     } catch (error) {
@@ -26,13 +28,14 @@ export class SellerController {
     }
   }
 
-  static async onboardSeller(req: Request, res: Response) {
+  static async onboardSeller(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
       if (!userId) {
-        return res
+        res
           .status(401)
           .json({ success: false, message: "Authentication required" });
+        return;
       }
 
       const profile = await SellerService.upsertProfile(userId, req.body);
@@ -44,22 +47,24 @@ export class SellerController {
     }
   }
 
-  static async updateMyProfile(req: Request, res: Response) {
+  static async updateMyProfile(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
       if (!userId) {
-        return res
+        res
           .status(401)
           .json({ success: false, message: "Authentication required" });
+        return;
       }
 
       const profile = await SellerService.updateProfile(userId, req.body);
       res.json({ success: true, data: profile });
     } catch (error: any) {
       if (error.message === "Seller profile not found") {
-        return res
+        res
           .status(404)
           .json({ success: false, message: "Seller profile not found" });
+        return;
       }
       res
         .status(500)
@@ -67,7 +72,7 @@ export class SellerController {
     }
   }
 
-  static async listSellers(req: Request, res: Response) {
+  static async listSellers(req: Request, res: Response): Promise<void> {
     try {
       const status = req.query.status as any;
       const page = Number(req.query.page) || 1;
@@ -81,15 +86,16 @@ export class SellerController {
     }
   }
 
-  static async approveSeller(req: Request, res: Response) {
+  static async approveSeller(req: Request, res: Response): Promise<void> {
     try {
       const profile = await SellerService.approveSeller(req.params.sellerId);
       res.json({ success: true, data: profile });
     } catch (error: any) {
       if (error.message === "Seller profile not found") {
-        return res
+        res
           .status(404)
           .json({ success: false, message: "Seller profile not found" });
+        return;
       }
       res
         .status(500)
@@ -97,7 +103,7 @@ export class SellerController {
     }
   }
 
-  static async rejectSeller(req: Request, res: Response) {
+  static async rejectSeller(req: Request, res: Response): Promise<void> {
     try {
       const reason = String(req.body?.reason ?? "").trim();
       const profile = await SellerService.rejectSeller(
@@ -107,9 +113,10 @@ export class SellerController {
       res.json({ success: true, data: profile });
     } catch (error: any) {
       if (error.message === "Seller profile not found") {
-        return res
+        res
           .status(404)
           .json({ success: false, message: "Seller profile not found" });
+        return;
       }
       res
         .status(500)

@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
+import { CheckoutService } from '../../core/services/checkout.service';
 import { CartItem, OrderTotals } from '../../core/models/cart.models';
 import { DeliveryAddress } from '../../core/models/checkout.models';
 
@@ -33,11 +34,15 @@ export class CheckoutComponent implements OnInit {
   isChangingAddress = false;
 
   // Payment
-  selectedPaymentMethod = 'cod'; // Default
+  selectedPaymentMethod = 'razorpay'; // Default
   walletBalance = 55.0; // Mock balance
   useWallet = false;
 
-  constructor(private cartService: CartService, private router: Router) {
+  constructor(
+    private cartService: CartService,
+    private checkoutService: CheckoutService,
+    private router: Router
+  ) {
     // Mock Data for Address
     this.savedAddresses = [
       {
@@ -62,8 +67,11 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.items = this.cartService.getItems();
-    this.computeTotals();
+    this.cartService.loadCart().subscribe();
+    this.cartService.cartItems$.subscribe((items) => {
+      this.items = items;
+      this.computeTotals();
+    });
 
     if (this.items.length === 0) {
       // Redirect or show empty state if needed
@@ -73,22 +81,19 @@ export class CheckoutComponent implements OnInit {
 
   // --- Quantity Logic ---
   increaseQty(item: CartItem) {
-    this.cartService.addItem(item.product, 1);
-    this.refreshCart();
+    this.cartService
+      .updateItemQuantity(item.product.id, item.quantity + 1)
+      .subscribe();
   }
 
   decreaseQty(item: CartItem) {
     if (item.quantity > 1) {
-      this.cartService.addItem(item.product, -1); // Negative adds to decrease
+      this.cartService
+        .updateItemQuantity(item.product.id, item.quantity - 1)
+        .subscribe();
     } else {
-      this.cartService.removeItem(item.product.id);
+      this.cartService.removeItem(item.product.id).subscribe();
     }
-    this.refreshCart();
-  }
-
-  private refreshCart() {
-    this.items = this.cartService.getItems();
-    this.computeTotals();
   }
 
   private computeTotals() {
@@ -134,8 +139,17 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder() {
-    alert('Order Placed Successfully!');
-    this.cartService.clear();
-    this.router.navigate(['/profile']); // Redirect to orders page
+    if (!this.defaultAddress) {
+      alert('Please select a delivery address.');
+      return;
+    }
+
+    this.checkoutService.setState(
+      this.items,
+      this.totals,
+      this.defaultAddress,
+      this.selectedPaymentMethod
+    );
+    this.router.navigate(['/payment']);
   }
 }

@@ -46,6 +46,7 @@ export class CartComponent implements OnInit {
   constructor(private cartService: CartService, private router: Router) {}
 
   ngOnInit(): void {
+    this.cartService.loadCart().subscribe();
     // Subscribe to cart changes to update UI automatically
     this.cartService.cartItems$.subscribe((items) => {
       this.items = items;
@@ -63,20 +64,24 @@ export class CartComponent implements OnInit {
 
   // Increase quantity by 1
   increaseQty(item: CartItem) {
-    this.cartService.addItem(item.product, 1);
+    this.cartService
+      .updateItemQuantity(item.product.id, item.quantity + 1)
+      .subscribe();
   }
 
   // Decrease quantity by 1 or remove if 0
   decreaseQty(item: CartItem) {
     if (item.quantity > 1) {
-      this.cartService.addItem(item.product, -1);
+      this.cartService
+        .updateItemQuantity(item.product.id, item.quantity - 1)
+        .subscribe();
     } else {
       this.deleteItem(item);
     }
   }
 
   deleteItem(item: CartItem) {
-    this.cartService.removeItem(item.product.id);
+    this.cartService.removeItem(item.product.id).subscribe();
   }
 
   proceedToBuy() {

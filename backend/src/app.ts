@@ -52,6 +52,8 @@ import userRoutes from "./routes/user.routes";
 import storeRoutes from "./routes/store.routes";
 import sellerRoutes from "./routes/seller.routes";
 import adminSellerRoutes from "./routes/admin.seller.routes";
+import sellerOrderRoutes from "./routes/seller-order.routes";
+import paymentRoutes from "./routes/payment.routes";
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -63,6 +65,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/sellers", sellerRoutes);
 app.use("/api/admin/sellers", adminSellerRoutes);
+app.use("/api/seller/orders", sellerOrderRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use("/api", catalogRoutes);
 
 // Cleanup expired OTPs every hour

@@ -1,7 +1,9 @@
 export interface IOrderItem {
   product: string; // Reference to Product ID
+  sellerId: string; // Reference to Seller(User) ID
   quantity: number;
   price: number; // Price at the time of order
+  itemStatus?: OrderStatus;
 }
 
 export enum OrderStatus {
@@ -27,12 +29,16 @@ export interface IOrder {
   };
   paymentStatus: "pending" | "completed" | "failed";
   paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface IOrderInput {
-  items: Array<{
+  items?: Array<{
     productId: string;
     quantity: number;
   }>;
@@ -44,6 +50,10 @@ export interface IOrderInput {
     zipCode: string;
   };
   paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
 }
 
 export interface IOrderQuery {

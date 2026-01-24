@@ -25,6 +25,11 @@ const orderSchema = new Schema<IOrderDocument>(
           ref: "Product",
           required: [true, "Product reference is required"],
         },
+        sellerId: {
+          type: String,
+          ref: "User",
+          required: [true, "Seller reference is required"],
+        },
         quantity: {
           type: Number,
           required: [true, "Quantity is required"],
@@ -34,6 +39,11 @@ const orderSchema = new Schema<IOrderDocument>(
           type: Number,
           required: [true, "Price is required"],
           min: [0, "Price cannot be negative"],
+        },
+        itemStatus: {
+          type: String,
+          enum: Object.values(OrderStatus),
+          default: OrderStatus.PENDING,
         },
       },
     ],
@@ -83,6 +93,18 @@ const orderSchema = new Schema<IOrderDocument>(
       type: String,
       required: [true, "Payment method is required"],
     },
+    paymentProvider: {
+      type: String,
+    },
+    paymentId: {
+      type: String,
+    },
+    paymentSignature: {
+      type: String,
+    },
+    razorpayOrderId: {
+      type: String,
+    },
   } as const,
   {
     timestamps: true,
@@ -100,6 +122,7 @@ const orderSchema = new Schema<IOrderDocument>(
 orderSchema.index({ buyer: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ "items.product": 1 });
+orderSchema.index({ "items.sellerId": 1, createdAt: -1 });
 
 // Calculate total amount method
 orderSchema.methods.calculateTotal = async function (): Promise<number> {

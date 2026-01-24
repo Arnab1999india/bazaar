@@ -6,6 +6,7 @@ import { SellerDashboardComponent } from './pages/dashboard/seller-dashboard.com
 import { SellerProductsComponent } from './pages/products/seller-products.component';
 import { SellerProductFormComponent } from './pages/products/seller-product-form.component';
 import { SellerOnboardingComponent } from './pages/onboarding/seller-onboarding.component';
+import { SellerOrdersComponent } from './pages/orders/seller-orders.component';
 
 export const SELLER_ROUTES: Routes = [
   {
@@ -35,6 +36,11 @@ export const SELLER_ROUTES: Routes = [
         path: 'products/:id/edit',
         canActivate: [sellerApprovalGuard],
         component: SellerProductFormComponent,
+      },
+      {
+        path: 'orders',
+        canActivate: [sellerApprovalGuard],
+        component: SellerOrdersComponent,
       },
     ],
   },
