@@ -1,8 +1,17 @@
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import { AppError, ErrorType } from "../interfaces/error.interface";
 
 // Load environment variables
-dotenv.config();
+const envPathFromRoot = path.resolve(process.cwd(), ".env");
+const envPathFromBackend = path.resolve(process.cwd(), "backend", ".env");
+const resolvedEnvPath = process.env.DOTENV_PATH
+  ? process.env.DOTENV_PATH
+  : fs.existsSync(envPathFromRoot)
+  ? envPathFromRoot
+  : envPathFromBackend;
+dotenv.config({ path: resolvedEnvPath });
 
 interface IEnvConfig {
   NODE_ENV: "development" | "production" | "test";

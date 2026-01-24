@@ -23,6 +23,12 @@
   padding: 0.75rem;
 }
 
+.error-msg {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: 0.35rem;
+}
+
 .btn {
   border: none;
   padding: 0.75rem 1rem;
@@ -34,4 +40,25 @@
 .btn-primary {
   background: #0f172a;
   color: #ffffff;
+}
+
+.variants {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.variants-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.variant-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f8fafc;
 }

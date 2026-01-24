@@ -1,52 +1,64 @@
-<section class="hero-section">
-  <div class="container">
-    <h1>Welcome to Bazaar</h1>
-    <p>Discover the best trends in fashion, electronics, and more.</p>
-    <button class="cta-btn" (click)="handleShopNow()">Shop Now</button>
-  </div>
-</section>
-<div class="home-container">
-  <section class="hero">
-    <h1>Shop the latest deals</h1>
-    <button class="shop-now-btn" (click)="handleShopNow()">Shop now</button>
+<div class="home-wrapper">
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Discover Trends That Matter</h1>
+      <p>From fashion to electronics, find everything you need in one place.</p>
+      <button class="cta-btn" (click)="handleShopNow()">Shop Now</button>
+    </div>
   </section>
 
-  <section class="grid-section">
-    <div class="card" *ngFor="let cat of categories">
-      <h2>{{ cat.title }}</h2>
+  <section class="section-container categories">
+    <div class="section-header">
+      <h2>Shop by Category</h2>
+      <a routerLink="/products" class="view-all">View All</a>
+    </div>
 
-      <div class="image-container">
-        <img
-          [src]="cat.image"
-          alt="{{ cat.title }}"
-          onerror="this.src='https://via.placeholder.com/300x250?text=Product+Image'"
-        />
+    <div class="category-grid">
+      @for (cat of categories; track cat.title) {
+      <div class="category-card" (click)="handleShopNow()">
+        <div class="img-wrapper">
+          <img
+            [src]="cat.image"
+            [alt]="cat.title"
+            onerror="this.src='https://via.placeholder.com/150?text=Category'"
+          />
+        </div>
+        <h3>{{ cat.title }}</h3>
       </div>
-
-      <button class="card-link" (click)="handleShopNow()">
-        {{ cat.link }}
-      </button>
+      }
     </div>
   </section>
 
-  <div class="discover-bar">
-    <h2>Discover more</h2>
-  </div>
-</div>
-<section class="categories">
-  <div class="container">
-    <h2>Shop by Category</h2>
-    <div class="grid-container">
-      <div class="card">Electronics</div>
-      <div class="card">Fashion</div>
-      <div class="card">Home & Living</div>
+  <section class="section-container featured">
+    <div class="section-header">
+      <h2>Trending Now</h2>
     </div>
-  </div>
-</section>
+    <div class="trending-grid">
+      @for (i of [1,2,3,4]; track i) {
+      <div class="placeholder-card">
+        <div class="placeholder-img"></div>
+        <div class="placeholder-text"></div>
+        <div class="placeholder-text short"></div>
+      </div>
+      }
+    </div>
+  </section>
 
-<section class="featured">
-  <div class="container">
-    <h2>Trending Now</h2>
-    <p>Loading best sellers...</p>
-  </div>
-</section>
+  <section class="seller-banner">
+    <div class="content">
+      <h2>Become a Seller on Bazaar</h2>
+      <p>
+        Start your business with us today. Reach millions of customers and grow
+        your brand.
+      </p>
+      <div class="actions">
+        <a routerLink="/auth/seller-register" class="btn-seller-primary"
+          >Register Now</a
+        >
+        <a routerLink="/auth/seller-login" class="btn-seller-secondary"
+          >Seller Login</a
+        >
+      </div>
+    </div>
+  </section>
+</div>

@@ -89,6 +89,11 @@ export class ProductController {
   async createProduct(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
+      }
       const product = await ProductService.createProduct(req.body, userId);
       res.status(201).json({ success: true, data: product });
     } catch (error) {
@@ -105,6 +110,11 @@ export class ProductController {
   async updateProduct(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
+      }
       const product = await ProductService.updateProduct(
         req.params.id,
         req.body,
@@ -130,6 +140,11 @@ export class ProductController {
   async deleteProduct(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
+      }
       const deleted = await ProductService.deleteProduct(req.params.id, userId);
       if (!deleted) {
         return res

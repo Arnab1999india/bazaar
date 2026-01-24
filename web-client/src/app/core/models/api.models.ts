@@ -21,7 +21,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role?: 'buyer' | 'seller' | 'admin';
+  role?: 'customer' | 'seller' | 'admin' | 'buyer';
 }
 
 export interface LoginPayload {
@@ -39,7 +39,7 @@ export interface RegistrationInitiatePayload {
   name: string;
   email: string;
   password: string;
-  role?: 'buyer' | 'seller' | 'admin' | 'customer';
+  role?: 'customer' | 'seller' | 'admin';
   phone?: string;
 }
 
@@ -97,8 +97,9 @@ export interface ProductCreatePayload {
   description?: string;
   price: number;
   category: string;
-  brand: string;
+  brand?: string;
   imageUrl: string[];
+  stockStatus?: 'in-stock' | 'out-of-stock';
   variants?: ProductVariant[];
 }
 
@@ -129,4 +130,53 @@ export interface UserProfileUpdate {
   educationSchool?: string;
   educationCollege?: string;
   profileImageUrl?: string;
+}
+
+// Sellers
+export type SellerProfileStatus = 'pending' | 'approved' | 'rejected';
+
+export interface SellerAddress {
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
+export interface SellerDocument {
+  type: string;
+  url: string;
+}
+
+export interface SellerProfile {
+  id: string;
+  user: string;
+  businessName: string;
+  legalName?: string | null;
+  businessType: string;
+  phone: string;
+  gstNumber?: string | null;
+  panNumber?: string | null;
+  shopAddress: SellerAddress;
+  warehouseAddress?: SellerAddress | null;
+  kycDocuments: SellerDocument[];
+  status: SellerProfileStatus;
+  rejectionReason?: string | null;
+  submittedAt?: string | null;
+  approvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SellerProfileInput {
+  businessName: string;
+  legalName?: string;
+  businessType: string;
+  phone: string;
+  gstNumber?: string;
+  panNumber?: string;
+  shopAddress: SellerAddress;
+  warehouseAddress?: SellerAddress;
+  kycDocuments?: SellerDocument[];
 }

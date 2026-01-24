@@ -19,6 +19,7 @@ interface MenuItem {
 export class SellerSidebarComponent {
   menu: MenuItem[] = [
     { label: 'Overview', route: '/seller' },
+    { label: 'Verification', route: '/seller/onboarding' },
     {
       label: 'Catalog',
       expanded: true,

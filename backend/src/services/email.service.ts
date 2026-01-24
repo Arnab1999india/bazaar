@@ -6,7 +6,7 @@ export class EmailService {
   private static transporter = nodemailer.createTransport({
     host: envConfig.SMTP_HOST,
     port: envConfig.SMTP_PORT,
-    secure: true, // true for 465, false for other ports
+    secure: false, // true for 465, false for other ports
     auth: {
       user: envConfig.SMTP_USER,
       pass: envConfig.SMTP_PASS,

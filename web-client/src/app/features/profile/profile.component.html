@@ -1,123 +1,253 @@
-<section class="profile-page">
-  <div class="profile-card" *ngIf="user; else loadingState">
-    <h2>Profile</h2>
-    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-    <div class="profile-details">
-      <div>
-        <span class="label">Name</span>
-        <span class="value">{{ user.name }}</span>
-      </div>
-      <div>
-        <span class="label">Email</span>
-        <span class="value">{{ user.email }}</span>
-      </div>
-      <div *ngIf="user.role">
-        <span class="label">Role</span>
-        <span class="value">{{ user.role }}</span>
+<section class="profile-container">
+  <div class="profile-header">
+    @if (currentView !== 'dashboard') {
+    <a (click)="setView('dashboard')" class="breadcrumb-link">Your Account</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">
+      {{ currentView | titlecase }}
+    </span>
+    } @else {
+    <h2>Your Account</h2>
+    }
+  </div>
+
+  @if (currentView === 'dashboard') {
+  <div class="dashboard-grid">
+    <app-profile-card
+      title="Your Orders"
+      subtitle="Track, return, or buy things again"
+      icon="https://cdn-icons-png.flaticon.com/512/3500/3500833.png"
+      (cardClick)="setView('orders')"
+    >
+    </app-profile-card>
+
+    <app-profile-card
+      title="Login & security"
+      subtitle="Edit login, name, and mobile number"
+      icon="https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
+      (cardClick)="setView('security')"
+    >
+    </app-profile-card>
+
+    <app-profile-card
+      title="Your Addresses"
+      subtitle="Edit addresses for orders and gifts"
+      icon="https://cdn-icons-png.flaticon.com/512/535/535239.png"
+      (cardClick)="setView('addresses')"
+    >
+    </app-profile-card>
+
+    <app-profile-card
+      title="Bazaar Pay Balance"
+      subtitle="Add money to your wallet"
+      icon="https://cdn-icons-png.flaticon.com/512/217/217853.png"
+      (cardClick)="setView('wallet')"
+    >
+    </app-profile-card>
+
+    <app-profile-card
+      title="Contact Us"
+      subtitle="Contact our customer service"
+      icon="https://cdn-icons-png.flaticon.com/512/10309/10309341.png"
+      (cardClick)="setView('contact')"
+    >
+    </app-profile-card>
+
+    <app-profile-card
+      title="Sign Out"
+      subtitle="Securely log out of your account"
+      icon="https://cdn-icons-png.flaticon.com/512/1828/1828479.png"
+      (cardClick)="logout()"
+    >
+    </app-profile-card>
+  </div>
+  } @switch (currentView) { @case ('orders') {
+  <div class="sub-view-container">
+    <div class="view-header">
+      <h2>Your Orders</h2>
+      <div class="search-orders">
+        <input type="text" placeholder="Search all orders" />
+        <button class="btn-dark">Search Orders</button>
       </div>
     </div>
 
-    <div class="profile-actions">
-      <button class="btn btn-secondary" type="button" (click)="logout()">
-        Logout
-      </button>
+    <div class="orders-nav">
+      <a class="active">Orders</a>
+      <a>Buy Again</a>
+      <a>Not Yet Shipped</a>
+      <a>Cancelled Orders</a>
     </div>
 
-    <div class="change-password">
-      <h3>Change Password</h3>
-      <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
-        <div class="form-group">
-          <label for="currentPassword">Current Password</label>
-          <input
-            id="currentPassword"
-            type="password"
-            formControlName="currentPassword"
-            class="form-control"
-          />
-          <div
-            class="error"
-            *ngIf="
-              passwordForm.get('currentPassword')?.invalid &&
-              passwordForm.get('currentPassword')?.touched
-            "
-          >
-            <span *ngIf="passwordForm.get('currentPassword')?.errors?.['required']"
-              >Current password is required</span
-            >
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="newPassword">New Password</label>
-          <input
-            id="newPassword"
-            type="password"
-            formControlName="newPassword"
-            class="form-control"
-          />
-          <div
-            class="error"
-            *ngIf="
-              passwordForm.get('newPassword')?.invalid &&
-              passwordForm.get('newPassword')?.touched
-            "
-          >
-            <span *ngIf="passwordForm.get('newPassword')?.errors?.['required']"
-              >New password is required</span
-            >
-            <span *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']"
-              >Password must be at least 6 characters</span
-            >
-            <span *ngIf="passwordForm.get('newPassword')?.errors?.['maxlength']"
-              >Password cannot exceed 128 characters</span
-            >
-            <span *ngIf="passwordForm.get('newPassword')?.errors?.['pattern']"
-              >Include uppercase, lowercase, and a number</span
-            >
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="confirmPassword">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            formControlName="confirmPassword"
-            class="form-control"
-          />
-          <div
-            class="error"
-            *ngIf="
-              passwordForm.get('confirmPassword')?.invalid &&
-              passwordForm.get('confirmPassword')?.touched
-            "
-          >
-            <span
-              *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']"
-              >Confirm password is required</span
-            >
-            <span
-              *ngIf="passwordForm.get('confirmPassword')?.errors?.['mustMatch']"
-              >Passwords must match</span
-            >
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="passwordForm.invalid || isChangingPassword"
-        >
-          {{ isChangingPassword ? 'Updating...' : 'Change Password' }}
+    <div class="orders-content">
+      @if (orders.length === 0) {
+      <div class="empty-state">
+        <p>You have no past orders.</p>
+        <button class="btn-primary" routerLink="/products">
+          Start Shopping
         </button>
+      </div>
+      } @else {
+      <div class="order-card" *ngFor="let order of orders"></div>
+      }
+    </div>
+  </div>
+  } @case ('addresses') {
+  <div class="sub-view-container">
+    <h2>Your Addresses</h2>
+
+    <div class="address-grid">
+      <div class="address-card add-new" (click)="toggleAddressForm()">
+        <div class="plus-icon">+</div>
+        <h3>Add Address</h3>
+      </div>
+
+      @for (addr of addresses; track addr.id) {
+      <div class="address-card">
+        @if (addr.isDefault) {
+        <div class="default-badge">Default</div>
+        }
+        <h3>{{ addr.fullName }}</h3>
+        <p>{{ addr.street }}</p>
+        <p>{{ addr.city }}, {{ addr.state }} {{ addr.zip }}</p>
+        <p>Phone: {{ addr.phone }}</p>
+        <div class="address-actions">
+          <a (click)="deleteAddress(addr.id)">Remove</a>
+          <span class="sep">|</span>
+          <a *ngIf="!addr.isDefault" (click)="setDefaultAddress(addr.id)"
+            >Set as Default</a
+          >
+        </div>
+      </div>
+      }
+    </div>
+
+    @if (showAddressForm) {
+    <div class="address-form-modal">
+      <h3>Add a new address</h3>
+      <form [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input formControlName="fullName" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Address Line</label>
+          <input formControlName="street" class="form-control" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input formControlName="city" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>State</label>
+            <input formControlName="state" class="form-control" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Zip Code</label>
+            <input formControlName="zip" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input formControlName="phone" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group check">
+          <input type="checkbox" formControlName="isDefault" id="def" />
+          <label for="def">Make this my default address</label>
+        </div>
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="toggleAddressForm()"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary">Add Address</button>
+        </div>
       </form>
     </div>
+    }
   </div>
-</section>
+  } @case ('security') {
+  <div class="sub-view-container narrow">
+    <h2>Login & Security</h2>
 
-<ng-template #loadingState>
-  <div class="profile-card">
-    <h2>Profile</h2>
-    <p *ngIf="isLoading">Loading profile...</p>
+    <div class="security-box">
+      <div class="sec-row">
+        <div class="sec-info">
+          <span class="label">Name:</span>
+          <span class="val">{{ user?.name }}</span>
+        </div>
+        <button class="btn-edit">Edit</button>
+      </div>
+      <div class="sec-row">
+        <div class="sec-info">
+          <span class="label">Email:</span>
+          <span class="val">{{ user?.email }}</span>
+        </div>
+        <button class="btn-edit">Edit</button>
+      </div>
+      <div class="sec-row">
+        <div class="sec-info">
+          <span class="label">Password:</span>
+          <span class="val">********</span>
+        </div>
+        <button class="btn-edit" (click)="showAddressForm = !showAddressForm">
+          Edit
+        </button>
+      </div>
+    </div>
+
+    @if (showAddressForm) {
+    <div class="password-change-box">
+      <h3>Change Password</h3>
+      <p class="success-msg" *ngIf="securityMessage">{{ securityMessage }}</p>
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <label>Current Password</label>
+        <input
+          type="password"
+          formControlName="currentPassword"
+          class="form-control"
+        />
+
+        <label>New Password</label>
+        <input
+          type="password"
+          formControlName="newPassword"
+          class="form-control"
+        />
+
+        <label>Re-enter New Password</label>
+        <input
+          type="password"
+          formControlName="confirmPassword"
+          class="form-control"
+        />
+
+        <button type="submit" class="btn-primary mt-2">Save Changes</button>
+      </form>
+    </div>
+    }
   </div>
-</ng-template>
+  } @case ('wallet') {
+  <div class="sub-view-container narrow">
+    <h2>Bazaar Pay</h2>
+    <div class="wallet-card">
+      <h3>Wallet Balance</h3>
+      <div class="balance">₹{{ walletBalance | number : "1.2-2" }}</div>
+      <button class="btn-primary">Add Money</button>
+    </div>
+  </div>
+  } @case ('contact') {
+  <div class="sub-view-container narrow">
+    <h2>Contact Customer Service</h2>
+    <p>Need help with recent orders?</p>
+    <button class="btn-primary">Chat with Us</button>
+    <br /><br />
+    <button class="btn-secondary">Request a Call</button>
+  </div>
+  } }
+</section>

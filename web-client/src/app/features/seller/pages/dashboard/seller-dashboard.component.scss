@@ -8,6 +8,25 @@
   gap: 2rem;
 }
 
+.status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  background: #f1f5f9;
+
+  h3 {
+    margin: 0 0 0.35rem;
+  }
+
+  p {
+    margin: 0;
+    color: #475569;
+  }
+}
+
 .dashboard-header {
   display: flex;
   align-items: center;
@@ -53,9 +72,15 @@
   gap: 0.75rem;
 }
 
+.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
 @media (max-width: 900px) {
   .dashboard-header,
-  .section-header {
+  .section-header,
+  .status-card {
     flex-direction: column;
     align-items: flex-start;
   }

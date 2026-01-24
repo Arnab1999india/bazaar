@@ -20,7 +20,7 @@ export class OtpValidationComponent {
   otpForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
-  private email = '';
+  public email = '';
   private purpose: 'password-reset' | 'registration' = 'password-reset';
 
   constructor(

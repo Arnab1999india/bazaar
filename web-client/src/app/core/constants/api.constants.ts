@@ -44,4 +44,14 @@ export const API_ENDPOINTS = {
     search: '/users/search',
     suggestions: '/users/suggestions',
   },
+  sellers: {
+    me: '/sellers/me',
+    onboard: '/sellers/onboard',
+    update: '/sellers/me',
+  },
+  adminSellers: {
+    list: '/admin/sellers',
+    approve: (sellerId: string) => `/admin/sellers/${sellerId}/approve`,
+    reject: (sellerId: string) => `/admin/sellers/${sellerId}/reject`,
+  },
 } as const;

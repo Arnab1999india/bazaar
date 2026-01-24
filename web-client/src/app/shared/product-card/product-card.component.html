@@ -1,5 +1,5 @@
 <div class="product-card">
-  <div class="product-image">
+  <div class="product-image" (click)="view.emit(product)">
     <img
       [src]="product.imageUrl?.[0] || 'https://via.placeholder.com/320x240?text=Product'"
       [alt]="product.name"
@@ -8,10 +8,14 @@
   <div class="product-body">
     <h3>{{ product.name }}</h3>
     <p class="meta">{{ product.brand }} • {{ product.category }}</p>
-    <p class="price">₹{{ product.price | number: '1.0-0' }}</p>
+    <p class="price">₹{{ product.price | number : "1.0-0" }}</p>
   </div>
   <div class="product-actions">
-    <button type="button" class="btn btn-secondary" (click)="view.emit(product)">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="view.emit(product)"
+    >
       View
     </button>
     <button

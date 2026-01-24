@@ -1,0 +1,71 @@
+$primary-color: #0f172a;
+$white: #ffffff;
+$text-muted: #94a3b8;
+$border-color: #1e293b;
+
+.main-footer {
+  background: $primary-color;
+  color: $text-muted;
+  padding: 4rem 1.5rem 2rem;
+  margin-top: auto; // Ensures footer pushes to bottom if using flex column layout
+
+  .footer-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .footer-col {
+    h3 {
+      color: $white;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin-bottom: 0.75rem;
+
+        a {
+          color: $text-muted;
+          text-decoration: none;
+          transition: color 0.2s;
+
+          &:hover {
+            color: $white;
+          }
+        }
+      }
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+
+      span {
+        cursor: pointer;
+        &:hover {
+          color: $white;
+        }
+      }
+    }
+  }
+
+  .footer-bottom {
+    text-align: center;
+    border-top: 1px solid $border-color;
+    padding-top: 2rem;
+    font-size: 0.9rem;
+  }
+}

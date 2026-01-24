@@ -1,60 +1,334 @@
- .profile-page {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 1rem;
+$text-black: #0f1111;
+$text-gray: #565959;
+$link-blue: #007185;
+$bg-light: #f8fafc;
+$white: #ffffff;
+
+.profile-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 80vh;
 }
 
-.profile-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  padding: 2rem;
-  width: min(720px, 100%);
+.profile-header {
+  margin-bottom: 20px;
+
+  h2 {
+    font-weight: 400;
+    font-size: 28px;
+    color: $text-black;
+  }
+
+  .breadcrumb-link {
+    color: $link-blue;
+    text-decoration: none;
+    cursor: pointer;
+    &:hover {
+      text-decoration: underline;
+      color: #c45500;
+    }
+  }
+
+  .breadcrumb-separator {
+    margin: 0 8px;
+    color: #555;
+  }
+  .breadcrumb-current {
+    color: #c45500;
+    font-weight: 600;
+  }
 }
 
-.profile-details {
+// DASHBOARD GRID
+.dashboard-grid {
   display: grid;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
-.profile-details .label {
-  display: block;
-  font-size: 0.8rem;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+// SUB VIEWS
+.sub-view-container {
+  background: $white;
+  padding: 20px;
+  border-radius: 8px;
+
+  &.narrow {
+    max-width: 600px;
+  }
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
 }
 
-.profile-details .value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.profile-actions {
+// ORDERS
+.view-header {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .search-orders {
+    display: flex;
+    gap: 5px;
+    input {
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  }
 }
 
-.change-password {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 1.5rem;
+.orders-nav {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+
+  a {
+    padding-bottom: 10px;
+    cursor: pointer;
+    color: $text-black;
+    &.active {
+      border-bottom: 2px solid #c45500;
+      font-weight: 700;
+      color: #000;
+    }
+  }
 }
 
+.empty-state {
+  text-align: center;
+  padding: 40px;
+}
+
+// ADDRESSES
+.address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+
+  .address-card {
+    border: 1px solid #d5d9d9;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+
+    &.add-new {
+      border-style: dashed;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #767676;
+      &:hover {
+        background: #f0f2f2;
+      }
+
+      .plus-icon {
+        font-size: 50px;
+        font-weight: 100;
+        color: #ddd;
+      }
+      h3 {
+        font-size: 18px;
+        color: #111;
+      }
+    }
+
+    h3 {
+      font-size: 16px;
+      margin: 10px 0 5px;
+    }
+    p {
+      margin: 2px 0;
+      font-size: 14px;
+      color: $text-black;
+    }
+
+    .default-badge {
+      font-size: 11px;
+      color: #565959;
+      border-bottom: 1px solid #d5d9d9;
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+    }
+
+    .address-actions {
+      margin-top: auto;
+      font-size: 13px;
+      color: $link-blue;
+
+      a {
+        cursor: pointer;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+      .sep {
+        margin: 0 5px;
+        color: #ddd;
+      }
+    }
+  }
+}
+
+.address-form-modal {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #d5d9d9;
+  border-radius: 8px;
+  max-width: 500px;
+}
+
+// FORMS
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
+  label {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
 }
-
+.form-row {
+  display: flex;
+  gap: 15px;
+  .form-group {
+    flex: 1;
+  }
+}
 .form-control {
   width: 100%;
-  border-radius: 8px;
-  border: 1px solid #cbd5f5;
-  padding: 0.75rem;
+  padding: 8px;
+  border: 1px solid #a6a6a6;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(15, 17, 17, 0.15) inset;
+}
+.form-group.check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  label {
+    margin: 0;
+    font-weight: 400;
+  }
 }
 
-.error {
-  color: #dc2626;
-  font-size: 0.85rem;
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+// SECURITY
+.security-box {
+  border: 1px solid #d5d9d9;
+  border-radius: 8px;
+
+  .sec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #d5d9d9;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .sec-info {
+      display: flex;
+      flex-direction: column;
+      .label {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .val {
+        font-size: 14px;
+      }
+    }
+
+    .btn-edit {
+      background: #fff;
+      border: 1px solid #d5d9d9;
+      border-radius: 20px;
+      padding: 5px 15px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
+      &:hover {
+        background: #f7fafa;
+      }
+    }
+  }
+}
+
+.password-change-box {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #d5d9d9;
+  border-radius: 8px;
+  background: #fcfcfc;
+
+  .success-msg {
+    color: green;
+    font-size: 13px;
+  }
+  .mt-2 {
+    margin-top: 15px;
+  }
+}
+
+// BUTTONS
+.btn-primary {
+  background: #ffd814;
+  border: 1px solid #fcd200;
+  border-radius: 8px;
+  padding: 8px 15px;
+  cursor: pointer;
+  color: #0f1111;
+  box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
+  &:hover {
+    background: #f7ca00;
+  }
+}
+.btn-secondary {
+  background: #fff;
+  border: 1px solid #d5d9d9;
+  border-radius: 8px;
+  padding: 8px 15px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
+  &:hover {
+    background: #f7fafa;
+  }
+}
+.btn-dark {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+// Wallet
+.wallet-card {
+  border: 1px solid #d5d9d9;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+
+  .balance {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 10px 0 20px;
+  }
 }

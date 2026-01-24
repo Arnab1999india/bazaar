@@ -23,6 +23,19 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.state {
+  color: #475569;
+  margin: 1rem 0;
+}
+
+.empty {
+  border: 1px dashed #cbd5f5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #475569;
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;
@@ -50,4 +63,8 @@
   background: transparent;
   border: 1px solid #cbd5f5;
   color: #0f172a;
+}
+
+.error {
+  color: #dc2626;
 }

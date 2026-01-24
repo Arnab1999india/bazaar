@@ -41,9 +41,7 @@ export const routes: Routes = [
   {
     path: 'seller',
     loadChildren: () =>
-      import('./features/seller/seller.routes').then(
-        (m) => m.SELLER_ROUTES
-      ),
+      import('./features/seller/seller.routes').then((m) => m.SELLER_ROUTES),
   },
   {
     path: 'checkout',
@@ -54,11 +52,26 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'cart',
+    loadComponent: () =>
+      import('./features/cart/pages/cart/cart.component').then(
+        (m) => m.CartComponent
+      ),
+  },
+  {
     path: 'payment',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/payment/payment.component').then(
         (m) => m.PaymentComponent
+      ),
+  },
+  {
+    path: 'wishlist',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/wishlist/wishlist.component').then(
+        (m) => m.WishlistComponent
       ),
   },
   {

@@ -1,10 +1,37 @@
 <section class="dashboard">
+  <div class="status-card" *ngIf="!isLoading">
+    <div>
+      <h3>Verification status: {{ statusLabel }}</h3>
+      <p *ngIf="profile?.status === 'rejected'">
+        {{ profile?.rejectionReason || 'Please update your details and resubmit.' }}
+      </p>
+      <p *ngIf="!profile">
+        Complete your onboarding profile to get approved for selling.
+      </p>
+      <p *ngIf="profile?.status === 'pending'">
+        We are reviewing your details. You will be notified once approved.
+      </p>
+      <p *ngIf="profile?.status === 'approved'">
+        Your account is approved. You can now list products.
+      </p>
+    </div>
+    <a class="btn btn-secondary" routerLink="/seller/onboarding">
+      Manage profile
+    </a>
+  </div>
+  <p class="error-msg" *ngIf="statusMessage">{{ statusMessage }}</p>
+
   <div class="dashboard-header">
     <div>
       <h2>Welcome to your seller account dashboard</h2>
       <p>Track orders, manage listings, and optimize your storefront.</p>
     </div>
-    <a class="btn btn-primary" routerLink="/seller/products/new">Add Product</a>
+    <a
+      class="btn btn-primary"
+      [class.disabled]="!isApproved"
+      [routerLink]="isApproved ? '/seller/products/new' : '/seller/onboarding'"
+      >Add Product</a
+    >
   </div>
 
   <section class="dashboard-section">
@@ -16,7 +43,11 @@
       <a class="btn btn-secondary" routerLink="/seller/products">View All</a>
     </div>
     <div class="section-actions">
-      <a class="btn btn-ghost" routerLink="/seller/products/new">
+      <a
+        class="btn btn-ghost"
+        [class.disabled]="!isApproved"
+        [routerLink]="isApproved ? '/seller/products/new' : '/seller/onboarding'"
+      >
         Add Another Product
       </a>
     </div>

@@ -1,17 +1,106 @@
-<section class="dashboard">
-  <h2>Admin Dashboard</h2>
-  <div class="stats">
-    <div class="card">
-      <p class="label">Total Orders</p>
-      <p class="value">1,245</p>
+<section class="admin-dashboard">
+  <header class="page-header">
+    <div>
+      <h2>Seller approvals</h2>
+      <p>Review onboarding submissions and approve new sellers.</p>
     </div>
-    <div class="card">
-      <p class="label">Active Sellers</p>
-      <p class="value">312</p>
+    <div class="filters">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [class.active]="statusFilter === 'pending'"
+        (click)="setStatusFilter('pending')"
+      >
+        Pending
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [class.active]="statusFilter === 'approved'"
+        (click)="setStatusFilter('approved')"
+      >
+        Approved
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [class.active]="statusFilter === 'rejected'"
+        (click)="setStatusFilter('rejected')"
+      >
+        Rejected
+      </button>
     </div>
-    <div class="card">
-      <p class="label">Revenue</p>
-      <p class="value">₹4.3M</p>
+  </header>
+
+  <p class="status-msg" *ngIf="actionMessage">{{ actionMessage }}</p>
+  <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table" *ngIf="!isLoading; else loadingState">
+    <div class="table-row table-header">
+      <span>Business</span>
+      <span>Owner</span>
+      <span>Contact</span>
+      <span>Status</span>
+      <span class="actions-col">Actions</span>
+    </div>
+
+    <div class="table-row" *ngFor="let seller of sellers">
+      <div>
+        <strong>{{ seller.businessName }}</strong>
+        <small>{{ seller.businessType }}</small>
+      </div>
+      <div>
+        <span>{{ seller.user }}</span>
+        <small>{{ seller.legalName || '—' }}</small>
+      </div>
+      <div>
+        <span>{{ seller.phone }}</span>
+        <small>{{ seller.shopAddress?.city }}, {{ seller.shopAddress?.state }}</small>
+      </div>
+      <div>
+        <span
+          class="pill"
+          [class.approved]="seller.status === 'approved'"
+          [class.rejected]="seller.status === 'rejected'"
+        >
+          {{ seller.status }}
+        </span>
+      </div>
+      <div class="actions-col">
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="approveSeller(seller.user)"
+          *ngIf="seller.status !== 'approved'"
+        >
+          Approve
+        </button>
+        <div class="reject-row" *ngIf="seller.status !== 'rejected'">
+          <input
+            class="form-control"
+            [(ngModel)]="rejectReasons[seller.user]"
+            placeholder="Reason"
+          />
+          <button
+            class="btn btn-danger"
+            type="button"
+            (click)="rejectSeller(seller.user)"
+          >
+            Reject
+          </button>
+        </div>
+        <span class="muted" *ngIf="seller.status === 'rejected'">
+          {{ seller.rejectionReason || 'Rejected' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="empty" *ngIf="sellers.length === 0">
+      No sellers found for this filter.
     </div>
   </div>
+
+  <ng-template #loadingState>
+    <div class="loading">Loading seller approvals...</div>
+  </ng-template>
 </section>

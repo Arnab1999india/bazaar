@@ -1,4 +1,3 @@
-<p>header works!</p>
 <header>
   <div class="navbar-top">
     <div class="logo">
@@ -6,12 +5,12 @@
     </div>
 
     <div class="search-bar">
-      <input type="text" placeholder="Search" />
+      <input type="text" placeholder="Search for products, brands and more" />
       <button class="search-btn">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width="20"
+          height="20"
           fill="currentColor"
           viewBox="0 0 16 16"
         >
@@ -23,44 +22,59 @@
     </div>
 
     <div class="nav-links">
-      <ng-container *ngIf="isLoggedIn$ | async; else authLinks">
-        <a routerLink="/products" class="sign-in">Products</a>
-        <a routerLink="/checkout" class="sign-in">
-          Cart ({{ cartCount$ | async }})
-        </a>
-        <a
-          *ngIf="(user$ | async)?.role === 'admin'"
-          routerLink="/admin"
-          class="sign-in"
-          >Admin</a
-        >
-        <a
-          *ngIf="(user$ | async)?.role === 'seller'"
-          routerLink="/seller"
-          class="sign-in"
-          >Seller</a
-        >
-        <a routerLink="/profile" class="sign-in">Profile</a>
-        <button type="button" class="sign-up" (click)="logout()">
-          Logout
-        </button>
-      </ng-container>
-      <ng-template #authLinks>
-        <a routerLink="/products" class="sign-in">Products</a>
-        <a routerLink="/auth/admin-login" class="sign-in">Admin</a>
-        <a routerLink="/auth/seller-login" class="sign-in">Seller</a>
-        <a routerLink="/auth/register" class="sign-up">Sign up</a>
-        <a routerLink="/auth/login" class="sign-in">Sign in</a>
-      </ng-template>
+      @if (isLoggedIn$ | async) {
+      <a routerLink="/products" class="nav-item">Shop</a>
+
+      <a routerLink="/cart" class="nav-item cart-link">
+        Cart @if ((cartCount$ | async); as count) {
+        <span class="badge">{{ count }}</span>
+        }
+      </a>
+
+      @if ((user$ | async)?.role === 'admin') {
+      <a routerLink="/admin" class="nav-item">Admin</a>
+      } @if ((user$ | async)?.role === 'seller') {
+      <a routerLink="/seller" class="nav-item">Seller Dashboard</a>
+      }
+
+      <a routerLink="/profile" class="nav-item">Profile</a>
+      <button type="button" class="btn-logout" (click)="logout()">
+        Logout
+      </button>
+      } @else {
+      <a routerLink="/products" class="nav-item">Shop</a>
+      <a routerLink="/auth/seller-login" class="nav-item">Become a Seller</a>
+      <div class="auth-buttons">
+        <a routerLink="/auth/login" class="btn-login">Log In</a>
+        <a routerLink="/auth/register" class="btn-register">Sign Up</a>
+      </div>
+      }
     </div>
   </div>
 
   <div class="navbar-bottom">
     <ul>
-      <li><a href="#">All</a></li>
-      <li><a href="#">Today's Deals</a></li>
-      <li><a href="#">Customer Service</a></li>
-      <li><a href="#">Electronics</a></li>
+      <li><a routerLink="/products">All Products</a></li>
+      <li>
+        <a routerLink="/products" [queryParams]="{ sort: 'bestseller' }"
+          >Best Sellers</a
+        >
+      </li>
+      <li>
+        <a routerLink="/products" [queryParams]="{ category: 'electronics' }"
+          >Electronics</a
+        >
+      </li>
+      <li>
+        <a routerLink="/products" [queryParams]="{ category: 'fashion' }"
+          >Fashion</a
+        >
+      </li>
+      <li>
+        <a routerLink="/products" [queryParams]="{ category: 'home' }"
+          >Home & Living</a
+        >
+      </li>
     </ul>
   </div>
 </header>

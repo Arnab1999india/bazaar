@@ -1,0 +1,129 @@
+<section class="seller-onboarding">
+  <div class="header">
+    <div>
+      <h2>Seller verification</h2>
+      <p>Submit your business details so we can approve your seller account.</p>
+    </div>
+    <button class="btn btn-ghost" type="button" (click)="backToDashboard()">
+      Back to dashboard
+    </button>
+  </div>
+
+  <div class="status" *ngIf="!isLoading">
+    <span class="status-label">Status: {{ statusLabel }}</span>
+    <span class="status-note" *ngIf="profile?.status === 'rejected'">
+      {{ profile?.rejectionReason || 'Please review the details and resubmit.' }}
+    </span>
+  </div>
+
+  <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="success-msg" *ngIf="successMessage">{{ successMessage }}</p>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset [disabled]="!canEdit || isSubmitting">
+      <div class="form-group">
+        <label for="businessName">Business name *</label>
+        <input id="businessName" class="form-control" formControlName="businessName" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="legalName">Legal name</label>
+          <input id="legalName" class="form-control" formControlName="legalName" />
+        </div>
+        <div class="form-group">
+          <label for="businessType">Business type *</label>
+          <select id="businessType" class="form-control" formControlName="businessType">
+            <option value="individual">Individual</option>
+            <option value="company">Company</option>
+            <option value="partnership">Partnership</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">Phone *</label>
+          <input id="phone" class="form-control" formControlName="phone" />
+        </div>
+        <div class="form-group">
+          <label for="gstNumber">GST number</label>
+          <input id="gstNumber" class="form-control" formControlName="gstNumber" />
+        </div>
+        <div class="form-group">
+          <label for="panNumber">PAN number</label>
+          <input id="panNumber" class="form-control" formControlName="panNumber" />
+        </div>
+      </div>
+
+      <div class="address-block" formGroupName="shopAddress">
+        <h3>Shop address</h3>
+        <div class="form-group">
+          <label for="shopLine1">Address line 1 *</label>
+          <input id="shopLine1" class="form-control" formControlName="line1" />
+        </div>
+        <div class="form-group">
+          <label for="shopLine2">Address line 2</label>
+          <input id="shopLine2" class="form-control" formControlName="line2" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="shopCity">City *</label>
+            <input id="shopCity" class="form-control" formControlName="city" />
+          </div>
+          <div class="form-group">
+            <label for="shopState">State *</label>
+            <input id="shopState" class="form-control" formControlName="state" />
+          </div>
+          <div class="form-group">
+            <label for="shopCountry">Country *</label>
+            <input id="shopCountry" class="form-control" formControlName="country" />
+          </div>
+          <div class="form-group">
+            <label for="shopPostal">Postal code *</label>
+            <input id="shopPostal" class="form-control" formControlName="postalCode" />
+          </div>
+        </div>
+      </div>
+
+      <div class="address-block" formGroupName="warehouseAddress">
+        <h3>Warehouse address (optional)</h3>
+        <div class="form-group">
+          <label for="warehouseLine1">Address line 1</label>
+          <input id="warehouseLine1" class="form-control" formControlName="line1" />
+        </div>
+        <div class="form-group">
+          <label for="warehouseLine2">Address line 2</label>
+          <input id="warehouseLine2" class="form-control" formControlName="line2" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="warehouseCity">City</label>
+            <input id="warehouseCity" class="form-control" formControlName="city" />
+          </div>
+          <div class="form-group">
+            <label for="warehouseState">State</label>
+            <input id="warehouseState" class="form-control" formControlName="state" />
+          </div>
+          <div class="form-group">
+            <label for="warehouseCountry">Country</label>
+            <input id="warehouseCountry" class="form-control" formControlName="country" />
+          </div>
+          <div class="form-group">
+            <label for="warehousePostal">Postal code</label>
+            <input id="warehousePostal" class="form-control" formControlName="postalCode" />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit" [disabled]="isSubmitting || !canEdit">
+        {{ isSubmitting ? 'Submitting...' : 'Submit for approval' }}
+      </button>
+      <span class="note" *ngIf="!canEdit">
+        Your profile is approved. Product listing is now enabled.
+      </span>
+    </div>
+  </form>
+</section>

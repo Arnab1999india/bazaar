@@ -1,12 +1,21 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/config";
 import rateLimit from "express-rate-limit";
 import { OTPService } from "./services/otp.service";
 
-dotenv.config();
+const envPathFromRoot = path.resolve(process.cwd(), ".env");
+const envPathFromBackend = path.resolve(process.cwd(), "backend", ".env");
+const resolvedEnvPath = process.env.DOTENV_PATH
+  ? process.env.DOTENV_PATH
+  : fs.existsSync(envPathFromRoot)
+  ? envPathFromRoot
+  : envPathFromBackend;
+dotenv.config({ path: resolvedEnvPath });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -41,6 +50,8 @@ import reviewRoutes from "./routes/review.routes";
 import catalogRoutes from "./routes/catalog.routes";
 import userRoutes from "./routes/user.routes";
 import storeRoutes from "./routes/store.routes";
+import sellerRoutes from "./routes/seller.routes";
+import adminSellerRoutes from "./routes/admin.seller.routes";
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -50,6 +61,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/stores", storeRoutes);
+app.use("/api/sellers", sellerRoutes);
+app.use("/api/admin/sellers", adminSellerRoutes);
 app.use("/api", catalogRoutes);
 
 // Cleanup expired OTPs every hour

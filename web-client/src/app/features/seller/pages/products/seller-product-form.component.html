@@ -1,26 +1,170 @@
 <section class="product-form">
-  <h2>{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h2>
+  <h2>{{ isEditMode ? "Edit Product" : "Add Product" }}</h2>
+  <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
   <form [formGroup]="form" (ngSubmit)="save()">
     <div class="form-group">
-      <label for="name">Product Name</label>
+      <label for="name">Product Name *</label>
       <input id="name" formControlName="name" class="form-control" />
+      <div
+        class="error-msg"
+        *ngIf="form.get('name')?.touched && form.get('name')?.invalid"
+      >
+        Name is required.
+      </div>
     </div>
+
     <div class="form-row">
       <div class="form-group">
-        <label for="price">Price</label>
-        <input id="price" formControlName="price" type="number" class="form-control" />
+        <label for="price">Price *</label>
+        <input
+          id="price"
+          formControlName="price"
+          type="number"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="category">Category *</label>
+        <input
+          id="category"
+          formControlName="category"
+          class="form-control"
+          placeholder="e.g. Electronics, Clothing"
+        />
+        <div
+          class="error-msg"
+          *ngIf="form.get('category')?.touched && form.get('category')?.invalid"
+        >
+          Category is required.
+        </div>
       </div>
       <div class="form-group">
-        <label for="stock">Stock</label>
-        <input id="stock" formControlName="stock" type="number" class="form-control" />
+        <label for="brand">Brand</label>
+        <input id="brand" formControlName="brand" class="form-control" />
       </div>
     </div>
+
     <div class="form-group">
-      <label for="description">Description</label>
-      <textarea id="description" formControlName="description" class="form-control"></textarea>
+      <label for="imageUrls">Image URLs *</label>
+      <input
+        id="imageUrls"
+        formControlName="imageUrls"
+        class="form-control"
+        placeholder="https://..., https://..."
+      />
+      <div
+        class="error-msg"
+        *ngIf="form.get('imageUrls')?.touched && form.get('imageUrls')?.invalid"
+      >
+        At least one image URL is required.
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary">
-      {{ isEditMode ? 'Update Product' : 'Create Product' }}
+
+    <div class="form-group">
+      <label for="tags">Tags (comma separated)</label>
+      <input
+        id="tags"
+        formControlName="tags"
+        class="form-control"
+        placeholder="new, sale, cotton"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        class="form-control"
+        rows="4"
+      ></textarea>
+      <div
+        class="error-msg"
+        *ngIf="form.get('description')?.touched && form.get('description')?.invalid"
+      >
+        Description is required (min 10 characters).
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="stockStatus">Stock Status *</label>
+      <select id="stockStatus" formControlName="stockStatus" class="form-control">
+        <option value="in-stock">In stock</option>
+        <option value="out-of-stock">Out of stock</option>
+      </select>
+    </div>
+
+    <div class="variants" formArrayName="variants">
+      <div class="variants-header">
+        <h3>Variants (optional)</h3>
+        <button type="button" class="btn btn-ghost" (click)="addVariant()">
+          Add Variant
+        </button>
+      </div>
+      <div
+        class="variant-card"
+        *ngFor="let variant of variants.controls; let i = index"
+        [formGroupName]="i"
+      >
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sku-{{ i }}">SKU *</label>
+            <input
+              id="sku-{{ i }}"
+              formControlName="sku"
+              class="form-control"
+              placeholder="S24-BLK-128"
+            />
+          </div>
+          <div class="form-group">
+            <label for="variantPrice-{{ i }}">Variant Price *</label>
+            <input
+              id="variantPrice-{{ i }}"
+              formControlName="price"
+              type="number"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="variantStock-{{ i }}">Stock *</label>
+            <input
+              id="variantStock-{{ i }}"
+              formControlName="stock"
+              type="number"
+              class="form-control"
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="variantAttributes-{{ i }}">Attributes (key:value)</label>
+          <input
+            id="variantAttributes-{{ i }}"
+            formControlName="attributes"
+            class="form-control"
+            placeholder="color:black, storage:128gb"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn-ghost"
+          (click)="removeVariant(i)"
+        >
+          Remove Variant
+        </button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+      {{
+        isLoading
+          ? "Saving..."
+          : isEditMode
+          ? "Update Product"
+          : "Create Product"
+      }}
     </button>
   </form>
 </section>

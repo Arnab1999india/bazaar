@@ -1,0 +1,155 @@
+<div class="wishlist-container">
+  <aside class="sidebar-left">
+    <div class="section">
+      <h3>Your Lists</h3>
+      <div class="list-tab active">
+        <span class="list-name">Arnab's Wish List</span>
+        <span class="privacy">Public</span>
+      </div>
+      <div class="list-tab">
+        <span class="list-name">Default List</span>
+        <span class="privacy">Private</span>
+      </div>
+      <div class="list-tab">
+        <span class="list-name">Favourite Reorders</span>
+        <span class="privacy">Private</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Your Friends</h3>
+      <a href="#" class="link">Create a list</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="list-header">
+      <div class="header-top">
+        <div class="title-group">
+          <h1>Arnab's Wish List</h1>
+          <span class="privacy-badge">Public</span>
+        </div>
+        <div class="actions">
+          <button class="btn-invite"><span class="icon">+</span> Invite</button>
+          <button class="btn-more">•••</button>
+        </div>
+      </div>
+      <div class="profile-info">
+        <div class="avatar-circle">
+          <img
+            src="https://ui-avatars.com/api/?name=Arnab+Adak&background=random"
+            alt="Profile"
+          />
+        </div>
+        <span class="invite-link">+ Invite</span>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <div class="view-toggles">
+        <button class="icon-btn active">▦</button>
+        <button class="icon-btn">☰</button>
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Search this list"
+          [(ngModel)]="searchQuery"
+          (input)="filterAndSort()"
+        />
+      </div>
+
+      <div class="filters">
+        <button class="btn-filter">Filter & Sort ⌄</button>
+        <select
+          class="sort-select"
+          [(ngModel)]="sortOption"
+          (change)="filterAndSort()"
+        >
+          <option value="date-desc">Sort by: Most recently added</option>
+          <option value="date-asc">Sort by: Oldest first</option>
+          <option value="price-low">Sort by: Price: Low to High</option>
+          <option value="price-high">Sort by: Price: High to Low</option>
+          <option value="priority">Sort by: Priority</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="items-list">
+      <div class="wishlist-item" *ngFor="let item of displayedItems">
+        <div class="item-image">
+          <img [src]="item.product.imageUrl?.[0]" [alt]="item.product.name" />
+        </div>
+
+        <div class="item-details">
+          <h3
+            class="product-title"
+            [routerLink]="['/products', item.product.id]"
+          >
+            {{ item.product.name }}
+          </h3>
+          <div class="by-line">by {{ item.product.brand }}</div>
+
+          <div class="rating">
+            <span class="stars">★★★★☆</span>
+            <span class="count">{{ item.ratingCount }}</span>
+          </div>
+
+          <div class="price-block">
+            <span class="deal-badge" *ngIf="item.hasDeal"
+              >{{ item.dealPercent }}% off</span
+            >
+            <span class="deal-label" *ngIf="item.hasDeal"
+              >Limited time deal</span
+            >
+            <div class="price-row">
+              <span class="currency">₹</span>
+              <span class="amount">{{
+                item.product.price | number : "1.0-0"
+              }}</span>
+              <span class="prime-icon">✓prime</span>
+            </div>
+            <div class="mrp-row" *ngIf="item.hasDeal">
+              M.R.P.:
+              <span class="strike"
+                >₹{{
+                  getOriginalPrice(item.product.price, item.dealPercent || 0)
+                    | number : "1.0-0"
+                }}</span
+              >
+            </div>
+          </div>
+
+          <div class="meta-info">
+            <p>Style Name: Standard</p>
+            <p class="date">
+              Item added {{ item.addedDate | date : "d MMMM y" }}
+            </p>
+          </div>
+        </div>
+
+        <div class="item-actions">
+          <button class="btn-add-cart" (click)="addToCart(item)">
+            Add to Cart
+          </button>
+
+          <div class="secondary-actions">
+            <button class="btn-small">Add a note</button>
+            <button class="btn-small">Move ⌄</button>
+            <button class="btn-icon" (click)="deleteItem(item.id)">🗑️</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="displayedItems.length === 0">
+        <p>No items found matching your search.</p>
+      </div>
+    </div>
+  </main>
+
+  <aside class="sidebar-right">
+    <div class="cart-summary"></div>
+  </aside>
+</div>

@@ -41,7 +41,13 @@ export class ProductListComponent implements OnInit {
   }
 
   viewProduct(product: Product): void {
-    this.router.navigate(['/products', product.id]);
+    // FIX: Fallback to '_id' if 'id' is undefined (common with MongoDB backends)
+    const productId = product.id || (product as any)._id;
+    if (productId) {
+      this.router.navigate(['/products', productId]);
+    } else {
+      console.error('Product ID is missing:', product);
+    }
   }
 
   addToCart(product: Product): void {
@@ -49,14 +55,17 @@ export class ProductListComponent implements OnInit {
   }
 
   buyNow(product: Product): void {
+    // FIX: Handle _id here as well
+    const productId = product.id || (product as any)._id;
+
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login'], {
-        queryParams: { returnUrl: `/checkout?productId=${product.id}` },
+        queryParams: { returnUrl: `/checkout?productId=${productId}` },
       });
       return;
     }
     this.router.navigate(['/checkout'], {
-      queryParams: { productId: product.id },
+      queryParams: { productId: productId },
     });
   }
 

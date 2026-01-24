@@ -16,8 +16,17 @@ import { Product } from '../../../core/models/api.models';
 export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
   isLoading = true;
-  errorMessage = '';
-  deliveryEstimate = 'Delivery in 2-4 business days';
+  selectedImage: string | null = null;
+
+  // Demo Data for UI richness
+  demoDiscount = 42;
+  deliveryDate = '';
+  demoFeatures = [
+    'High-performance material ensures durability and longevity.',
+    'Designed for optimal ease of use and installation.',
+    'Includes a 1-year manufacturer warranty for peace of mind.',
+    'Compatible with a wide range of devices and accessories.',
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -28,6 +37,15 @@ export class ProductDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Calculate a fake delivery date (Tomorrow)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.deliveryDate = tomorrow.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    });
+
     const productId = this.route.snapshot.paramMap.get('id');
     if (!productId) {
       this.router.navigate(['/products']);
@@ -37,19 +55,50 @@ export class ProductDetailComponent implements OnInit {
     this.catalogService.getProduct(productId).subscribe({
       next: (res) => {
         this.product = res.data;
+        // Ensure image array exists for gallery logic
+        if (!this.product.imageUrl || this.product.imageUrl.length === 0) {
+          this.product.imageUrl = [
+            'https://via.placeholder.com/600x600?text=No+Image',
+          ];
+        }
+        // Duplicate image if only one exists to show thumbnail strip effect
+        if (this.product.imageUrl.length === 1) {
+          this.product.imageUrl.push(this.product.imageUrl[0]);
+          this.product.imageUrl.push(this.product.imageUrl[0]);
+        }
+        this.selectedImage = this.product.imageUrl[0];
         this.isLoading = false;
       },
       error: () => {
-        this.product = this.demoProduct(productId);
         this.isLoading = false;
-        this.errorMessage = 'Showing demo data while API is unavailable.';
+        // Fallback for demo if API fails
+        this.product = {
+          id: 'demo',
+          name: 'Kratos Mobile Holder for Bike with One-Touch Lock',
+          price: 499,
+          category: 'Electronics',
+          brand: 'Kratos',
+          description:
+            'Shockproof Mobile Stand for Motorcycles, Universal Anti-Slip.',
+          imageUrl: [
+            'https://via.placeholder.com/500?text=Main+Image',
+            'https://via.placeholder.com/500?text=Side+View',
+          ],
+        };
+        this.selectedImage = this.product.imageUrl![0];
       },
     });
+  }
+
+  // Calculate Fake MRP based on discount
+  getOriginalPrice(currentPrice: number): number {
+    return currentPrice * (100 / (100 - this.demoDiscount));
   }
 
   addToCart(): void {
     if (!this.product) return;
     this.cartService.addItem(this.product, 1);
+    // You might want to show a toast/notification here
   }
 
   buyNow(): void {
@@ -63,18 +112,5 @@ export class ProductDetailComponent implements OnInit {
     this.router.navigate(['/checkout'], {
       queryParams: { productId: this.product.id },
     });
-  }
-
-  private demoProduct(productId: string): Product {
-    return {
-      id: productId,
-      name: 'Demo Product',
-      price: 4999,
-      category: 'electronics',
-      brand: 'bazaar',
-      description:
-        'This is a demo product description for the selected item.',
-      imageUrl: ['https://via.placeholder.com/720x520?text=Product+Detail'],
-    };
   }
 }

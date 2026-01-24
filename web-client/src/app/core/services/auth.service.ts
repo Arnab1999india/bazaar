@@ -57,7 +57,13 @@ export class AuthService {
       )
       .pipe(
         tap((res) => {
-          this.persistSession(res.data, remember);
+          const data = res.data as AuthResponse & {
+            token?: string;
+          };
+          if (!data.tokens && data.token) {
+            data.tokens = { accessToken: data.token };
+          }
+          this.persistSession(data, remember);
         })
       );
   }
