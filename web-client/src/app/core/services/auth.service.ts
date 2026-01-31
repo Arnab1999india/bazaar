@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import {
-  API_BASE_URL,
-  API_ENDPOINTS,
-} from '../constants/api.constants';
+import { API_BASE_URL, API_ENDPOINTS } from '../constants/api.constants';
 import {
   ApiResponse,
   AuthResponse,
@@ -20,11 +17,11 @@ export class AuthService {
   private readonly storageKey = 'bazaar.auth';
   private readonly userKey = 'bazaar.user';
   private readonly authStateSubject = new BehaviorSubject<boolean>(
-    this.hasTokens()
+    this.hasTokens(),
   );
   readonly authState$ = this.authStateSubject.asObservable();
   private readonly userSubject = new BehaviorSubject<AuthUser | null>(
-    this.getStoredUser()
+    this.getStoredUser(),
   );
   readonly user$ = this.userSubject.asObservable();
 
@@ -33,28 +30,27 @@ export class AuthService {
   register(payload: RegisterPayload): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.register}`,
-      payload
+      payload,
     );
   }
 
   initiateRegistration(
-    payload: RegistrationInitiatePayload
+    payload: RegistrationInitiatePayload,
   ): Observable<ApiResponse<{ message: string }>> {
     return this.http.post<ApiResponse<{ message: string }>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.initiateRegistration}`,
-      payload
+      payload,
     );
   }
 
   login(
     payload: LoginPayload,
-    remember = true
+    remember = true,
   ): Observable<ApiResponse<AuthResponse>> {
     return this.http
-      .post<ApiResponse<AuthResponse>>(
-        `${API_BASE_URL}${API_ENDPOINTS.auth.login}`,
-        payload
-      )
+      .post<
+        ApiResponse<AuthResponse>
+      >(`${API_BASE_URL}${API_ENDPOINTS.auth.login}`, payload)
       .pipe(
         tap((res) => {
           const data = res.data as AuthResponse & {
@@ -64,14 +60,14 @@ export class AuthService {
             data.tokens = { accessToken: data.token };
           }
           this.persistSession(data, remember);
-        })
+        }),
       );
   }
 
   requestPasswordReset(email: string): Observable<ApiResponse<null>> {
     return this.http.post<ApiResponse<null>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.passwordResetRequest}`,
-      { email }
+      { email },
     );
   }
 
@@ -82,7 +78,7 @@ export class AuthService {
   }): Observable<ApiResponse<null>> {
     return this.http.post<ApiResponse<null>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.verifyPasswordResetOtp}`,
-      payload
+      payload,
     );
   }
 
@@ -93,7 +89,7 @@ export class AuthService {
   }): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.verifyRegistration}`,
-      payload
+      payload,
     );
   }
 
@@ -103,7 +99,7 @@ export class AuthService {
   }): Observable<ApiResponse<null>> {
     return this.http.post<ApiResponse<null>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.resendOtp}`,
-      payload
+      payload,
     );
   }
 
@@ -113,28 +109,26 @@ export class AuthService {
   }): Observable<ApiResponse<null>> {
     return this.http.post<ApiResponse<null>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.resetPassword}`,
-      payload
+      payload,
     );
   }
 
   refresh(refreshToken: string): Observable<ApiResponse<AuthTokens>> {
     return this.http.post<ApiResponse<AuthTokens>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.refresh}`,
-      { refreshToken }
+      { refreshToken },
     );
   }
 
   logout(): Observable<ApiResponse<null>> {
     return this.http
-      .post<ApiResponse<null>>(
-        `${API_BASE_URL}${API_ENDPOINTS.auth.logout}`,
-        {},
-        { headers: this.authHeaders }
-      )
+      .post<
+        ApiResponse<null>
+      >(`${API_BASE_URL}${API_ENDPOINTS.auth.logout}`, {}, { headers: this.authHeaders })
       .pipe(
         tap(() => {
           this.clearSession();
-        })
+        }),
       );
   }
 
@@ -145,19 +139,27 @@ export class AuthService {
     return this.http.post<ApiResponse<null>>(
       `${API_BASE_URL}${API_ENDPOINTS.auth.changePassword}`,
       payload,
-      { headers: this.authHeaders }
+      { headers: this.authHeaders },
     );
   }
 
   get authHeaders(): HttpHeaders {
     const tokens = this.getTokens();
-    return tokens?.accessToken
-      ? new HttpHeaders({
-          Authorization: `Bearer ${tokens.accessToken}`,
-        })
-      : new HttpHeaders();
-  }
+    const tokenValue =
+      typeof tokens?.accessToken === 'string'
+        ? tokens!.accessToken
+        : ((tokens as any)?.accessToken?.accessToken ?? '');
 
+    console.log('AuthService tokenValue:', tokenValue);
+
+    if (tokenValue) {
+      return new HttpHeaders({
+        Authorization: `Bearer ${tokenValue}`,
+      });
+    }
+
+    return new HttpHeaders();
+  }
   getTokens(): AuthTokens | null {
     const stored =
       localStorage.getItem(this.storageKey) ??
@@ -186,14 +188,14 @@ export class AuthService {
   persistSessionFromToken(
     user: AuthUser,
     token: string,
-    remember = true
+    remember = true,
   ): void {
     this.persistSession(
       {
         user,
         tokens: { accessToken: token },
       },
-      remember
+      remember,
     );
   }
 

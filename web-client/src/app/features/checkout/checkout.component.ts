@@ -9,6 +9,8 @@ import {
 import { Router } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
 import { CheckoutService } from '../../core/services/checkout.service';
+import { OrderService } from '../../core/services/order.service';
+import { ToastService } from '../../core/services/toast.service';
 import { CartItem, OrderTotals } from '../../core/models/cart.models';
 import { DeliveryAddress } from '../../core/models/checkout.models';
 
@@ -41,6 +43,8 @@ export class CheckoutComponent implements OnInit {
   constructor(
     private cartService: CartService,
     private checkoutService: CheckoutService,
+    private orderService: OrderService,
+    private toastService: ToastService,
     private router: Router
   ) {
     // Mock Data for Address
@@ -140,7 +144,35 @@ export class CheckoutComponent implements OnInit {
 
   placeOrder() {
     if (!this.defaultAddress) {
-      alert('Please select a delivery address.');
+      this.toastService.error('Please select a delivery address.');
+      return;
+    }
+
+    if (this.selectedPaymentMethod === 'cod') {
+      this.orderService
+        .createOrder({
+          shippingAddress: {
+            street: this.defaultAddress.line1,
+            city: this.defaultAddress.city,
+            state: this.defaultAddress.state,
+            country: 'India',
+            zipCode: this.defaultAddress.postalCode,
+          },
+          paymentMethod: 'cod',
+          paymentProvider: 'cod',
+        })
+        .subscribe({
+          next: () => {
+            this.cartService.clear().subscribe();
+            this.toastService.success('Order placed successfully.');
+            this.router.navigate(['/profile']);
+          },
+          error: (err) => {
+            const message =
+              err?.error?.message || 'Unable to place the order.';
+            this.toastService.error(message);
+          },
+        });
       return;
     }
 
@@ -148,7 +180,7 @@ export class CheckoutComponent implements OnInit {
       this.items,
       this.totals,
       this.defaultAddress,
-      this.selectedPaymentMethod
+      'razorpay'
     );
     this.router.navigate(['/payment']);
   }

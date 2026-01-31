@@ -68,11 +68,13 @@
               <span class="separator">|</span>
               <a (click)="deleteItem(item)">Delete</a>
               <span class="separator">|</span>
-              <a href="javascript:void(0)">Save for later</a>
+              <a href="javascript:void(0)" (click)="saveForLater(item)"
+                >Save for later</a
+              >
               <span class="separator">|</span>
               <a href="javascript:void(0)">See more like this</a>
               <span class="separator">|</span>
-              <a href="javascript:void(0)">Share</a>
+              <a href="javascript:void(0)" (click)="openShare(item)">Share</a>
             </div>
           </div>
         </div>
@@ -85,8 +87,51 @@
 
     <div class="cart-footer" *ngIf="items.length > 0">
       <span class="subtotal-label">Subtotal ({{ itemCount }} items):</span>
-      <span class="subtotal-value">₹{{ subtotal | number : "1.2-2" }}</span>
+      <span class="subtotal-value">&#8377;{{ subtotal | number : "1.2-2" }}</span>
     </div>
+
+    <div class="saved-section" *ngIf="savedItems.length > 0">
+      <h2>Saved for later ({{ savedItems.length }} items)</h2>
+      <div class="cart-list">
+        <div class="cart-item" *ngFor="let item of savedItems">
+          <div class="item-image" [routerLink]="['/products', item.product.id]">
+            <img
+              [src]="item.product.imageUrl?.[0] || 'https://via.placeholder.com/180'"
+              [alt]="item.product.name"
+            />
+          </div>
+
+          <div class="item-details">
+            <div class="item-header">
+              <h3 [routerLink]="['/products', item.product.id]">
+                {{ item.product.name }}
+              </h3>
+              <span class="price-mobile"
+                >&#8377;{{ item.product.price | number : "1.0-0" }}</span
+              >
+            </div>
+            <div class="item-actions">
+              <div class="action-links">
+                <a href="javascript:void(0)" (click)="moveToCart(item)"
+                  >Move to cart</a
+                >
+                <span class="separator">|</span>
+                <a href="javascript:void(0)" (click)="removeSavedItem(item)"
+                  >Delete</a
+                >
+                <span class="separator">|</span>
+                <a href="javascript:void(0)" (click)="openShare(item)"
+                  >Share</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="item-price">
+            <strong>&#8377;{{ item.product.price | number : "1.0-0" }}</strong>
+          </div>
+        </div>
+      </div>
   </div>
 
   <div class="cart-sidebar" *ngIf="items.length > 0">
@@ -138,3 +183,11 @@
     </div>
   </div>
 </div>
+
+
+<app-share-modal
+  [isOpen]="shareModalOpen"
+  [title]="shareTitle"
+  [shareUrl]="shareUrl"
+  (closed)="closeShare()"
+></app-share-modal>

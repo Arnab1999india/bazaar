@@ -5,6 +5,7 @@ import { CatalogService } from '../../../core/services/catalog.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Product } from '../../../core/models/api.models';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -33,7 +34,8 @@ export class ProductDetailComponent implements OnInit {
     private router: Router,
     private catalogService: CatalogService,
     private cartService: CartService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -97,12 +99,29 @@ export class ProductDetailComponent implements OnInit {
 
   addToCart(): void {
     if (!this.product) return;
-    this.cartService.addItem(this.product, 1);
+    if (this.isOutOfStock(this.product)) {
+      this.toastService.info('This product is currently out of stock.');
+      return;
+    }
+    this.cartService.addItem(this.product, 1).subscribe({
+      next: () => {
+        this.toastService.success('Added to cart.');
+      },
+      error: (err) => {
+        const message =
+          err?.error?.message || 'Unable to add the product to cart.';
+        this.toastService.error(message);
+      },
+    });
     // You might want to show a toast/notification here
   }
 
   buyNow(): void {
     if (!this.product) return;
+    if (this.isOutOfStock(this.product)) {
+      this.toastService.info('This product is currently out of stock.');
+      return;
+    }
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login'], {
         queryParams: { returnUrl: `/checkout?productId=${this.product.id}` },
@@ -112,5 +131,12 @@ export class ProductDetailComponent implements OnInit {
     this.router.navigate(['/checkout'], {
       queryParams: { productId: this.product.id },
     });
+  }
+
+  public isOutOfStock(product: Product): boolean {
+    if (typeof product.totalStock === 'number') {
+      return product.totalStock <= 0;
+    }
+    return product.stockStatus === 'out-of-stock';
   }
 }

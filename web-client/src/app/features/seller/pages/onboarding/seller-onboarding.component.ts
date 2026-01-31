@@ -169,7 +169,7 @@ export class SellerOnboardingComponent implements OnInit {
     const warehouse = raw.warehouseAddress;
     const hasWarehouse =
       warehouse &&
-      Object.values(warehouse).some((value: string) => String(value).trim());
+      Object.values(warehouse).some((value) => String(value ?? '').trim());
 
     return {
       businessName: raw.businessName,

@@ -49,6 +49,16 @@
     font-size: 1.1rem;
     color: #0f172a;
   }
+
+  .stock {
+    margin: 0.2rem 0 0.4rem;
+    font-size: 0.85rem;
+    color: #15803d;
+  }
+
+  .stock.out {
+    color: #b91c1c;
+  }
 }
 
 .product-actions {
@@ -89,4 +99,9 @@
   &:hover {
     background: #f8fafc;
   }
+}
+
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

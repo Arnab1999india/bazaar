@@ -21,11 +21,17 @@
     <button
       type="button"
       class="btn btn-primary"
+      [disabled]="isOutOfStock"
       (click)="addToCart.emit(product)"
     >
       Add to Cart
     </button>
-    <button type="button" class="btn btn-ghost" (click)="buyNow.emit(product)">
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="isOutOfStock"
+      (click)="buyNow.emit(product)"
+    >
       Buy Now
     </button>
   </div>

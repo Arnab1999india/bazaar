@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { CartService } from '../../../core/services/cart.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Product } from '../../../core/models/api.models';
 import { ProductCardComponent } from '../../../shared/product-card/product-card.component';
@@ -23,20 +24,33 @@ export class ProductListComponent implements OnInit {
     private catalogService: CatalogService,
     private cartService: CartService,
     private authService: AuthService,
+    private toastService: ToastService,
+    private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.catalogService.listProducts().subscribe({
-      next: (res) => {
-        this.products = res.data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.products = this.demoProducts();
-        this.isLoading = false;
-        this.errorMessage = 'Showing demo products while API is unavailable.';
-      },
+    this.route.queryParams.subscribe((params) => {
+      this.isLoading = true;
+      this.catalogService
+        .listProducts({
+          q: params['q'],
+          category: params['category'],
+          brand: params['brand'],
+          sort: params['sort'],
+        })
+        .subscribe({
+          next: (res) => {
+            this.products = res.data;
+            this.isLoading = false;
+          },
+          error: () => {
+            this.products = this.demoProducts();
+            this.isLoading = false;
+            this.errorMessage =
+              'Showing demo products while API is unavailable.';
+          },
+        });
     });
   }
 
@@ -51,13 +65,32 @@ export class ProductListComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
-    this.cartService.addItem(product, 1).subscribe();
+    if (this.isOutOfStock(product)) {
+      this.errorMessage = 'This product is currently out of stock.';
+      this.toastService.info(this.errorMessage);
+      return;
+    }
+    this.cartService.addItem(product, 1).subscribe({
+      next: () => {
+        this.toastService.success('Added to cart.');
+      },
+      error: (err) => {
+        this.errorMessage =
+          err?.error?.message || 'Unable to add the product to cart.';
+        this.toastService.error(this.errorMessage);
+      },
+    });
   }
 
   buyNow(product: Product): void {
     // FIX: Handle _id here as well
     const productId = product.id || (product as any)._id;
 
+    if (this.isOutOfStock(product)) {
+      this.errorMessage = 'This product is currently out of stock.';
+      this.toastService.info(this.errorMessage);
+      return;
+    }
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login'], {
         queryParams: { returnUrl: `/checkout?productId=${productId}` },
@@ -108,5 +141,12 @@ export class ProductListComponent implements OnInit {
         imageUrl: ['https://via.placeholder.com/420x320?text=Backpack'],
       },
     ];
+  }
+
+  private isOutOfStock(product: Product): boolean {
+    if (typeof product.totalStock === 'number') {
+      return product.totalStock <= 0;
+    }
+    return product.stockStatus === 'out-of-stock';
   }
 }

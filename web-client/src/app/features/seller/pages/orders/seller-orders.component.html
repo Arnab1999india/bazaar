@@ -14,7 +14,7 @@
     <article class="order-card" *ngFor="let order of orders">
       <div class="order-header">
         <div>
-          <h3>Order {{ order.id }}</h3>
+          <h3>Order {{ orderId(order) }}</h3>
           <p>Total: {{ order.totalAmount | currency: 'INR' }}</p>
         </div>
         <span class="pill">{{ order.status }}</span>
@@ -23,7 +23,7 @@
       <div class="items">
         <div class="item" *ngFor="let item of order.items">
           <div>
-            <strong>{{ item.product?.name }}</strong>
+            <strong>{{ item.product.name }}</strong>
             <p>
               Qty {{ item.quantity }} • ₹{{ item.price }} •
               Status: {{ item.itemStatus }}
@@ -32,13 +32,13 @@
           <div class="actions">
             <select
               [value]="item.itemStatus"
-              (change)="updateItemStatus(order.id, item.id || item._id, $any($event.target).value)"
+              (change)="updateItemStatus(orderId(order), itemId(item), $any($event.target).value)"
             >
               <option *ngFor="let status of statusOptions" [value]="status">
                 {{ status }}
               </option>
             </select>
-            <span *ngIf="updatingItemId === (item.id || item._id)">Updating...</span>
+            <span *ngIf="updatingItemId === itemId(item)">Updating...</span>
           </div>
         </div>
       </div>

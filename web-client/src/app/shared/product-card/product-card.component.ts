@@ -14,4 +14,11 @@ export class ProductCardComponent {
   @Output() view = new EventEmitter<Product>();
   @Output() addToCart = new EventEmitter<Product>();
   @Output() buyNow = new EventEmitter<Product>();
+
+  get isOutOfStock(): boolean {
+    if (typeof this.product?.totalStock === 'number') {
+      return this.product.totalStock <= 0;
+    }
+    return this.product?.stockStatus === 'out-of-stock';
+  }
 }

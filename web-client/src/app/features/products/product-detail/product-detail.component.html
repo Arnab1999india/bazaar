@@ -116,7 +116,9 @@
         <a href="#">Delivering to Kolkata 700102</a>
       </div>
 
-      <h3 class="stock-status">In stock</h3>
+      <h3 class="stock-status" [class.out]="isOutOfStock(product)">
+        {{ isOutOfStock(product) ? 'Out of stock' : 'In stock' }}
+      </h3>
 
       <div class="seller-info">
         Ships from <span>Amazon</span><br />
@@ -133,8 +135,20 @@
           </select>
         </div>
 
-        <button class="btn-add-cart" (click)="addToCart()">Add to Cart</button>
-        <button class="btn-buy-now" (click)="buyNow()">Buy Now</button>
+        <button
+          class="btn-add-cart"
+          [disabled]="isOutOfStock(product)"
+          (click)="addToCart()"
+        >
+          Add to Cart
+        </button>
+        <button
+          class="btn-buy-now"
+          [disabled]="isOutOfStock(product)"
+          (click)="buyNow()"
+        >
+          Buy Now
+        </button>
       </div>
 
       <div class="secure-transaction">🔒 Secure transaction</div>

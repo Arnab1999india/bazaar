@@ -283,6 +283,10 @@ $btn-buy-border: #ff8f00;
     margin-bottom: 15px;
   }
 
+  .stock-status.out {
+    color: #b91c1c;
+  }
+
   .seller-info {
     font-size: 12px;
     margin-bottom: 20px;
@@ -320,6 +324,11 @@ $btn-buy-border: #ff8f00;
       cursor: pointer;
       font-size: 13px;
       box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
+    }
+
+    button[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .btn-add-cart {

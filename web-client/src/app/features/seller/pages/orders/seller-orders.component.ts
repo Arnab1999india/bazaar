@@ -57,4 +57,12 @@ export class SellerOrdersComponent implements OnInit {
       },
     });
   }
+
+  orderId(order: Order): string {
+    return order.id || order._id || '';
+  }
+
+  itemId(item: { id?: string; _id?: string }): string {
+    return item.id || item._id || '';
+  }
 }

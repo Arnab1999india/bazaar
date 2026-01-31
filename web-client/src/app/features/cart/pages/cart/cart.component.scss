@@ -237,6 +237,22 @@ $btn-yellow-border: #fcd200;
   }
 }
 
+.saved-section {
+  margin-top: 25px;
+  border-top: 1px solid $border-color;
+  padding-top: 20px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 15px;
+  }
+
+  .cart-item {
+    border-bottom: 1px solid $border-color;
+  }
+}
+
 // RIGHT COLUMN (Sidebar)
 .cart-sidebar {
   width: 300px;

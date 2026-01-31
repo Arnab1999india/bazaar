@@ -12,16 +12,17 @@ export interface AuthRequest extends Request {
 export const auth: RequestHandler = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
+    console.log("🔍 Incoming Auth Header:", `"${token}"`);
     if (!token) {
       throw new AppError(
         ErrorType.AUTHENTICATION,
         "Authentication required",
-        401
+        401,
       );
     }
 
@@ -34,13 +35,14 @@ export const auth: RequestHandler = async (
 
     req.user = user;
     next();
-  } catch (error) {
+  } catch (error: any) {
+    console.error("JWT Verification Error:", error.message);
     next(
       new AppError(
         ErrorType.AUTHENTICATION,
         "Invalid authentication token",
-        401
-      )
+        401,
+      ),
     );
   }
 };
@@ -48,7 +50,7 @@ export const auth: RequestHandler = async (
 export const optionalAuth: RequestHandler = async (
   req: AuthRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
   if (!token) {
@@ -72,7 +74,7 @@ export const authorize = (...roles: UserRole[]): RequestHandler => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       next(
-        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401)
+        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401),
       );
       return;
     }
@@ -82,8 +84,8 @@ export const authorize = (...roles: UserRole[]): RequestHandler => {
         new AppError(
           ErrorType.AUTHORIZATION,
           "Not authorized to access this resource",
-          403
-        )
+          403,
+        ),
       );
       return;
     }
@@ -92,13 +94,11 @@ export const authorize = (...roles: UserRole[]): RequestHandler => {
   };
 };
 
-export const validateOwnership = (
-  resourceUserId: string
-): RequestHandler => {
+export const validateOwnership = (resourceUserId: string): RequestHandler => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       next(
-        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401)
+        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401),
       );
       return;
     }
@@ -108,8 +108,8 @@ export const validateOwnership = (
         new AppError(
           ErrorType.AUTHORIZATION,
           "Not authorized to access this resource",
-          403
-        )
+          403,
+        ),
       );
       return;
     }

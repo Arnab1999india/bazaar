@@ -10,49 +10,50 @@ const router = Router();
 router.post(
   "/register",
   validateRequest(authValidation.register),
-  AuthController.register
+  AuthController.register,
 );
 
+router.post("/refresh", AuthController.refresh);
 router.post(
   "/initiate-registration",
   validateRequest(authValidation.register),
-  AuthController.initiateRegistration
+  AuthController.initiateRegistration,
 );
 
 router.post(
   "/verify-registration",
   validateRequest(authValidation.verifyOTP),
-  AuthController.verifyRegistration
+  AuthController.verifyRegistration,
 );
 
 router.post(
   "/login",
   validateRequest(authValidation.login),
-  AuthController.login
+  AuthController.login,
 );
 
 router.post(
   "/password-reset-request",
   validateRequest(authValidation.resetPasswordRequest),
-  AuthController.requestPasswordReset
+  AuthController.requestPasswordReset,
 );
 
 router.post(
   "/verify-password-reset-otp",
   validateRequest(authValidation.verifyOTP),
-  AuthController.verifyPasswordResetOTP
+  AuthController.verifyPasswordResetOTP,
 );
 
 router.post(
   "/reset-password",
   validateRequest(authValidation.resetPassword),
-  AuthController.resetPassword
+  AuthController.resetPassword,
 );
 
 router.post(
   "/resend-otp",
   validateRequest(authValidation.resendOTP),
-  AuthController.resendOTP
+  AuthController.resendOTP,
 );
 
 // OAuth routes
@@ -70,13 +71,13 @@ router.get("/profile", AuthController.getProfile);
 router.patch(
   "/profile",
   validateRequest(authValidation.updateProfile),
-  AuthController.updateProfile
+  AuthController.updateProfile,
 );
 
 router.post(
   "/change-password",
   validateRequest(authValidation.changePassword),
-  AuthController.changePassword
+  AuthController.changePassword,
 );
 
 router.post("/logout", AuthController.logout);

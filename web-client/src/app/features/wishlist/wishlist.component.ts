@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
+import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/api.models';
 
 interface WishlistItem {
@@ -32,7 +33,11 @@ export class WishlistComponent implements OnInit {
   // Display list (filtered/sorted)
   displayedItems: WishlistItem[] = [];
 
-  constructor(private cartService: CartService, private router: Router) {}
+  constructor(
+    private cartService: CartService,
+    private toastService: ToastService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadMockData();
@@ -120,7 +125,20 @@ export class WishlistComponent implements OnInit {
   }
 
   addToCart(item: WishlistItem) {
-    this.cartService.addItem(item.product, 1).subscribe();
+    if (item.product.stockStatus === 'out-of-stock') {
+      this.toastService.info('This product is currently out of stock.');
+      return;
+    }
+    this.cartService.addItem(item.product, 1).subscribe({
+      next: () => {
+        this.toastService.success('Added to cart.');
+      },
+      error: (err) => {
+        const message =
+          err?.error?.message || 'Unable to add the product to cart.';
+        this.toastService.error(message);
+      },
+    });
     // Optional: Show toast or feedback
   }
 

@@ -131,6 +131,7 @@ export type OrderItemStatus =
 
 export interface OrderItem {
   id: string;
+  _id?: string;
   product: Product;
   sellerId: string;
   quantity: number;
@@ -140,6 +141,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  _id?: string;
   items: OrderItem[];
   buyer: { id: string; name: string; email: string } | string;
   totalAmount: number;
