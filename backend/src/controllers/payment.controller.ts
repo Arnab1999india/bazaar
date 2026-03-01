@@ -1,119 +1,94 @@
-import { Response, NextFunction } from "express";
-import crypto from "crypto";
-import Razorpay from "razorpay";
-import { envConfig } from "../config/env.config";
+import { Request, Response, NextFunction } from "express";
+import { PaymentService } from "../services/payment.service";
 import { AppError, ErrorType } from "../interfaces/error.interface";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import { CartService } from "../services/cart.service";
-
-const getRazorpayClient = () => {
-  if (!envConfig.RAZORPAY_KEY_ID || !envConfig.RAZORPAY_KEY_SECRET) {
-    throw new AppError(
-      ErrorType.INTERNAL,
-      "Razorpay credentials are not configured",
-      500
-    );
-  }
-
-  return new Razorpay({
-    key_id: envConfig.RAZORPAY_KEY_ID,
-    key_secret: envConfig.RAZORPAY_KEY_SECRET,
-  });
-};
 
 export class PaymentController {
-  static async createRazorpayOrder(
+  static async createPaymentOrder(
     req: AuthRequest,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       if (!req.user) {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Authentication required",
-          401
+          401,
         );
       }
 
-      const razorpay = getRazorpayClient();
-      const currency = String(req.body?.currency || "INR");
-      const cart = await CartService.getCart(req.user.id);
-      const baseAmount =
-        typeof req.body?.amount === "number" && req.body.amount > 0
-          ? req.body.amount
-          : cart.totalAmount;
-      const amount = Math.round(baseAmount * 100);
-
-      const order = await razorpay.orders.create({
+      const { orderId, amount, currency } = req.body;
+      const result = await PaymentService.createPaymentOrder(req.user.id, {
+        orderId,
         amount,
         currency,
-        receipt: `order_${req.user.id}_${Date.now()}`,
-        notes: req.body?.notes || undefined,
       });
 
       res.status(200).json({
         success: true,
-        data: {
-          orderId: order.id,
-          amount: order.amount,
-          currency: order.currency,
-          keyId: envConfig.RAZORPAY_KEY_ID,
-        },
+        data: result,
       });
     } catch (error) {
       next(error);
     }
   }
 
-  static async verifyRazorpayPayment(
+  static async verifyPayment(
     req: AuthRequest,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       if (!req.user) {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Authentication required",
-          401
+          401,
         );
       }
 
-      const { orderId, paymentId, signature } = req.body || {};
-      if (!orderId || !paymentId || !signature) {
-        throw new AppError(
-          ErrorType.VALIDATION,
-          "Missing payment verification fields",
-          400
-        );
-      }
+      const { razorpayOrderId, razorpayPaymentId, razorpaySignature } =
+        req.body;
 
-      if (!envConfig.RAZORPAY_KEY_SECRET) {
-        throw new AppError(
-          ErrorType.INTERNAL,
-          "Razorpay secret is not configured",
-          500
-        );
-      }
-
-      const body = `${orderId}|${paymentId}`;
-      const expected = crypto
-        .createHmac("sha256", envConfig.RAZORPAY_KEY_SECRET)
-        .update(body)
-        .digest("hex");
-
-      if (expected !== signature) {
-        throw new AppError(
-          ErrorType.VALIDATION,
-          "Payment signature verification failed",
-          400
-        );
-      }
+      const result = await PaymentService.verifyPayment({
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+      });
 
       res.status(200).json({
         success: true,
-        data: { verified: true },
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPaymentByOrderId(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      if (!req.user) {
+        throw new AppError(
+          ErrorType.AUTHENTICATION,
+          "Authentication required",
+          401,
+        );
+      }
+
+      const { orderId } = req.params;
+      const payment = await PaymentService.getPaymentByOrderId(
+        orderId,
+        req.user.id,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: payment,
       });
     } catch (error) {
       next(error);

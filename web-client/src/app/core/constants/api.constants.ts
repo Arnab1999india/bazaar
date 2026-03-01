@@ -56,9 +56,10 @@ export const API_ENDPOINTS = {
     updateItemStatus: (orderId: string, itemId: string) =>
       `/seller/orders/${orderId}/items/${itemId}/status`,
   },
-  payments: {
-    razorpayCreate: '/payments/razorpay/create-order',
-    razorpayVerify: '/payments/razorpay/verify',
+  payment: {
+    createOrder: '/payment/create-order',
+    verify: '/payment/verify',
+    getByOrderId: (orderId: string) => `/payment/order/${orderId}`,
   },
   users: {
     me: '/users/me',

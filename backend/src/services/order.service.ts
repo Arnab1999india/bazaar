@@ -11,7 +11,7 @@ import { AppError, ErrorType } from "../interfaces/error.interface";
 export class OrderService {
   static async createOrder(
     userId: string,
-    orderData: IOrderInput
+    orderData: IOrderInput,
   ): Promise<any> {
     try {
       // If items are provided in orderData, use them; otherwise, use cart items
@@ -27,7 +27,7 @@ export class OrderService {
             throw new AppError(
               ErrorType.NOT_FOUND,
               `Product ${item.productId} not found`,
-              404
+              404,
             );
           }
 
@@ -35,7 +35,7 @@ export class OrderService {
             throw new AppError(
               ErrorType.VALIDATION,
               `Product ${product.name} is out of stock`,
-              400
+              400,
             );
           }
 
@@ -62,7 +62,7 @@ export class OrderService {
             throw new AppError(
               ErrorType.VALIDATION,
               `Product ${item.product.name} is out of stock`,
-              400
+              400,
             );
           }
 
@@ -79,7 +79,7 @@ export class OrderService {
       // Calculate total amount
       const totalAmount = orderItems.reduce(
         (sum: number, item: any) => sum + item.price * item.quantity,
-        0
+        0,
       );
 
       // Create order
@@ -147,7 +147,7 @@ export class OrderService {
 
   static async getUserOrders(
     userId: string,
-    query: IOrderQuery = {}
+    query: IOrderQuery = {},
   ): Promise<{ orders: any[]; total: number; page: number; limit: number }> {
     try {
       const { status, startDate, endDate, page = 1, limit = 10 } = query;
@@ -192,7 +192,7 @@ export class OrderService {
 
   static async getSellerOrders(
     sellerId: string,
-    query: IOrderQuery = {}
+    query: IOrderQuery = {},
   ): Promise<{ orders: any[]; total: number; page: number; limit: number }> {
     try {
       const { status, startDate, endDate, page = 1, limit = 10 } = query;
@@ -220,7 +220,7 @@ export class OrderService {
 
       const mapped = orders.map((order) => {
         const filteredItems = order.items.filter(
-          (item: any) => item.sellerId?.toString() === sellerId
+          (item: any) => item.sellerId?.toString() === sellerId,
         );
         const raw = order.toJSON();
         return {
@@ -231,7 +231,11 @@ export class OrderService {
 
       return { orders: mapped, total, page, limit };
     } catch (error) {
-      throw new AppError(ErrorType.INTERNAL, "Error fetching seller orders", 500);
+      throw new AppError(
+        ErrorType.INTERNAL,
+        "Error fetching seller orders",
+        500,
+      );
     }
   }
 
@@ -239,7 +243,7 @@ export class OrderService {
     orderId: string,
     itemId: string,
     status: OrderStatus,
-    sellerId: string
+    sellerId: string,
   ): Promise<any> {
     try {
       const order = await Order.findOne({
@@ -253,7 +257,7 @@ export class OrderService {
       }
 
       const item = order.items.find(
-        (entry: any) => entry._id?.toString() === itemId
+        (entry: any) => entry._id?.toString() === itemId,
       );
       if (!item) {
         throw new AppError(ErrorType.NOT_FOUND, "Order item not found", 404);
@@ -268,7 +272,7 @@ export class OrderService {
 
       const raw = order.toJSON();
       raw.items = raw.items.filter(
-        (entry: any) => entry.sellerId?.toString() === sellerId
+        (entry: any) => entry.sellerId?.toString() === sellerId,
       );
       return raw;
     } catch (error) {
@@ -276,7 +280,7 @@ export class OrderService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error updating seller order item",
-        500
+        500,
       );
     }
   }
@@ -284,7 +288,7 @@ export class OrderService {
   static async updateOrderStatus(
     orderId: string,
     status: OrderStatus,
-    userId?: string
+    userId?: string,
   ): Promise<any> {
     try {
       const order = await Order.findById(orderId);
@@ -313,7 +317,7 @@ export class OrderService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error updating order status",
-        500
+        500,
       );
     }
   }
@@ -339,7 +343,7 @@ export class OrderService {
         throw new AppError(
           ErrorType.VALIDATION,
           "Order cannot be cancelled",
-          400
+          400,
         );
       }
 

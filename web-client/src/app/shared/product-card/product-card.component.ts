@@ -15,10 +15,22 @@ export class ProductCardComponent {
   @Output() addToCart = new EventEmitter<Product>();
   @Output() buyNow = new EventEmitter<Product>();
 
-  get isOutOfStock(): boolean {
-    if (typeof this.product?.totalStock === 'number') {
-      return this.product.totalStock <= 0;
+  isOutOfStock(): boolean {
+    // Check stockStatus field
+    if (this.product.stockStatus === 'out-of-stock') {
+      return true;
     }
-    return this.product?.stockStatus === 'out-of-stock';
+
+    // Check totalStock field
+    if (this.product.totalStock !== undefined && this.product.totalStock <= 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // ✅ NEW: Get stock status text
+  getStockText(): string {
+    return this.isOutOfStock() ? 'Out of Stock' : 'In Stock';
   }
 }

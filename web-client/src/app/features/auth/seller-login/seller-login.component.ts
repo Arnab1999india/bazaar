@@ -25,7 +25,7 @@ export class SellerLoginComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -37,6 +37,9 @@ export class SellerLoginComponent {
     this.showPassword = !this.showPassword;
   }
 
+  navigateToForgotPassword() {
+    this.router.navigate(['/auth/forgot-password']);
+  }
   onSubmit() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -47,7 +50,9 @@ export class SellerLoginComponent {
     this.errorMessage = '';
     const { email, password } = this.loginForm.value;
     const payload = {
-      email: String(email ?? '').trim().toLowerCase(),
+      email: String(email ?? '')
+        .trim()
+        .toLowerCase(),
       password: String(password ?? ''),
     };
 

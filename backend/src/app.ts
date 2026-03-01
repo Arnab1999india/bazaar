@@ -13,8 +13,8 @@ const envPathFromBackend = path.resolve(process.cwd(), "backend", ".env");
 const resolvedEnvPath = process.env.DOTENV_PATH
   ? process.env.DOTENV_PATH
   : fs.existsSync(envPathFromRoot)
-  ? envPathFromRoot
-  : envPathFromBackend;
+    ? envPathFromRoot
+    : envPathFromBackend;
 dotenv.config({ path: resolvedEnvPath });
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -66,18 +66,21 @@ app.use("/api/stores", storeRoutes);
 app.use("/api/sellers", sellerRoutes);
 app.use("/api/admin/sellers", adminSellerRoutes);
 app.use("/api/seller/orders", sellerOrderRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use("/api/payment", paymentRoutes);
 app.use("/api", catalogRoutes);
 
 // Cleanup expired OTPs every hour
-setInterval(async () => {
-  try {
-    await OTPService.cleanupExpiredOTPs();
-    console.log("Expired OTPs cleaned up");
-  } catch (error) {
-    console.error("Error cleaning up expired OTPs:", error);
-  }
-}, 60 * 60 * 1000); // 1 hour
+setInterval(
+  async () => {
+    try {
+      await OTPService.cleanupExpiredOTPs();
+      console.log("Expired OTPs cleaned up");
+    } catch (error) {
+      console.error("Error cleaning up expired OTPs:", error);
+    }
+  },
+  60 * 60 * 1000,
+); // 1 hour
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

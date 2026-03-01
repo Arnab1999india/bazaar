@@ -1,15 +1,42 @@
-<div class="product-card">
-  <div class="product-image" (click)="view.emit(product)">
+<div class="product-card" [class.out-of-stock]="isOutOfStock()">
+  <div class="product-image">
+    <!-- Out of Stock Badge -->
+    <div class="stock-badge" *ngIf="isOutOfStock()">
+      <span>Out of Stock</span>
+    </div>
+
     <img
-      [src]="product.imageUrl?.[0] || 'https://via.placeholder.com/320x240?text=Product'"
+      [src]="
+        product.imageUrl?.[0] ||
+        'https://via.placeholder.com/320x240?text=Product'
+      "
       [alt]="product.name"
     />
   </div>
+
   <div class="product-body">
     <h3>{{ product.name }}</h3>
     <p class="meta">{{ product.brand }} • {{ product.category }}</p>
-    <p class="price">₹{{ product.price | number : "1.0-0" }}</p>
+    <p class="price">₹{{ product.price | number: "1.0-0" }}</p>
+
+    <!-- Stock Status -->
+    <div class="stock-status">
+      <span
+        class="stock-indicator"
+        [class.in-stock]="!isOutOfStock()"
+        [class.out-of-stock]="isOutOfStock()"
+      >
+        {{ getStockText() }}
+      </span>
+      <span
+        class="stock-count"
+        *ngIf="product.totalStock !== undefined && product.totalStock > 0"
+      >
+        {{ product.totalStock }} available
+      </span>
+    </div>
   </div>
+
   <div class="product-actions">
     <button
       type="button"
@@ -21,18 +48,18 @@
     <button
       type="button"
       class="btn btn-primary"
-      [disabled]="isOutOfStock"
+      [disabled]="isOutOfStock()"
       (click)="addToCart.emit(product)"
     >
-      Add to Cart
+      {{ isOutOfStock() ? "Out of Stock" : "Add to Cart" }}
     </button>
     <button
       type="button"
       class="btn btn-ghost"
-      [disabled]="isOutOfStock"
+      [disabled]="isOutOfStock()"
       (click)="buyNow.emit(product)"
     >
-      Buy Now
+      {{ isOutOfStock() ? "Unavailable" : "Buy Now" }}
     </button>
   </div>
 </div>
