@@ -1,55 +1,244 @@
-<section class="dashboard">
-  <div class="status-card" *ngIf="!isLoading">
-    <div>
-      <h3>Verification status: {{ statusLabel }}</h3>
-      <p *ngIf="profile?.status === 'rejected'">
-        {{ profile?.rejectionReason || 'Please update your details and resubmit.' }}
-      </p>
-      <p *ngIf="!profile">
-        Complete your onboarding profile to get approved for selling.
-      </p>
-      <p *ngIf="profile?.status === 'pending'">
-        We are reviewing your details. You will be notified once approved.
-      </p>
-      <p *ngIf="profile?.status === 'approved'">
-        Your account is approved. You can now list products.
-      </p>
+<div class="seller-dashboard" *ngIf="!isLoadingProfile; else loadingTpl">
+  <!-- Verification Status Banner -->
+  <div class="status-banner" [ngClass]="statusClass">
+    <div class="status-info">
+      <span class="status-icon">
+        <span *ngIf="profile?.status === 'approved'">✅</span>
+        <span *ngIf="profile?.status === 'rejected'">❌</span>
+        <span *ngIf="profile?.status === 'pending'">⏳</span>
+        <span *ngIf="!profile">📋</span>
+      </span>
+      <div>
+        <h3 class="status-title">Verification Status: {{ statusLabel }}</h3>
+        <p class="status-desc" *ngIf="!profile">
+          Complete your onboarding profile to start selling on Bazaar.
+        </p>
+        <p class="status-desc" *ngIf="profile?.status === 'pending'">
+          Your profile is under review. You'll be notified once approved.
+        </p>
+        <p class="status-desc" *ngIf="profile?.status === 'approved'">
+          Your account is approved. You can list products and manage orders.
+        </p>
+        <p
+          class="status-desc rejection-reason"
+          *ngIf="profile?.status === 'rejected'"
+        >
+          Reason:
+          {{
+            profile?.rejectionReason ||
+              "Please update your details and resubmit."
+          }}
+        </p>
+      </div>
     </div>
-    <a class="btn btn-secondary" routerLink="/seller/onboarding">
-      Manage profile
+    <a class="btn btn-outline" routerLink="/seller/onboarding">
+      {{ profile ? "Manage Profile" : "Start Onboarding" }}
     </a>
   </div>
-  <p class="error-msg" *ngIf="statusMessage">{{ statusMessage }}</p>
 
+  <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <!-- Dashboard Header -->
   <div class="dashboard-header">
     <div>
-      <h2>Welcome to your seller account dashboard</h2>
-      <p>Track orders, manage listings, and optimize your storefront.</p>
+      <h2>
+        Welcome{{ profile?.businessName ? ", " + profile?.businessName : "" }}
+      </h2>
+      <p class="subtitle">Here's an overview of your store's performance.</p>
     </div>
     <a
       class="btn btn-primary"
       [class.disabled]="!isApproved"
       [routerLink]="isApproved ? '/seller/products/new' : '/seller/onboarding'"
-      >Add Product</a
     >
+      + Add Product
+    </a>
   </div>
 
-  <section class="dashboard-section">
-    <div class="section-header">
-      <div>
-        <h3>My Products</h3>
-        <p>Review, edit, and manage everything you are selling.</p>
-      </div>
-      <a class="btn btn-secondary" routerLink="/seller/products">View All</a>
+  <!-- Stats only for approved sellers -->
+  <ng-container *ngIf="isApproved">
+    <div class="loading-stats" *ngIf="isLoadingStats">
+      <div class="spinner"></div>
+      <span>Loading your stats...</span>
     </div>
-    <div class="section-actions">
-      <a
-        class="btn btn-ghost"
-        [class.disabled]="!isApproved"
-        [routerLink]="isApproved ? '/seller/products/new' : '/seller/onboarding'"
-      >
-        Add Another Product
+
+    <ng-container *ngIf="!isLoadingStats && stats">
+      <!-- Summary KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Total Revenue</span>
+          <span class="kpi-value">{{
+            formatCurrency(stats.summary.totalRevenue)
+          }}</span>
+          <span class="kpi-sub">Lifetime earnings</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total Orders</span>
+          <span class="kpi-value">{{ stats.summary.totalOrders }}</span>
+          <span class="kpi-sub">All time</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Avg Order Value</span>
+          <span class="kpi-value">{{
+            formatCurrency(stats.summary.avgOrderValue)
+          }}</span>
+          <span class="kpi-sub">Per order</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Products Listed</span>
+          <span class="kpi-value">{{ stats.summary.totalProducts }}</span>
+          <a class="kpi-sub kpi-link" routerLink="/seller/products">Manage</a>
+        </div>
+      </section>
+
+      <!-- Weekly & Monthly Sales -->
+      <section class="sales-section">
+        <h3 class="section-title">Sales Performance</h3>
+        <div class="sales-grid">
+          <div class="sales-card">
+            <div class="sales-header">
+              <span class="sales-period">This Week</span>
+              <span class="sales-badge">Last 7 days</span>
+            </div>
+            <div class="sales-revenue">
+              {{ formatCurrency(stats.weekly.revenue) }}
+            </div>
+            <div class="sales-orders">{{ stats.weekly.orders }} orders</div>
+          </div>
+          <div class="sales-card">
+            <div class="sales-header">
+              <span class="sales-period">This Month</span>
+              <span
+                class="sales-badge growth"
+                [class.negative]="!growthPositive"
+                *ngIf="growthIndicator"
+              >
+                {{ growthIndicator }} vs last month
+              </span>
+            </div>
+            <div class="sales-revenue">
+              {{ formatCurrency(stats.monthly.revenue) }}
+            </div>
+            <div class="sales-orders">{{ stats.monthly.orders }} orders</div>
+            <div
+              class="sales-last-month"
+              *ngIf="stats.monthly.lastMonthRevenue > 0"
+            >
+              Last month: {{ formatCurrency(stats.monthly.lastMonthRevenue) }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Orders by Status -->
+      <section class="orders-status-section">
+        <div class="section-header">
+          <h3 class="section-title">Orders by Status</h3>
+          <a class="btn btn-ghost-sm" routerLink="/seller/orders"
+            >View All Orders</a
+          >
+        </div>
+        <div class="status-grid">
+          <div class="status-card status-pending">
+            <span class="status-count">{{ stats.ordersByStatus.pending }}</span>
+            <span class="status-name">Pending</span>
+          </div>
+          <div class="status-card status-processing">
+            <span class="status-count">{{
+              stats.ordersByStatus.processing
+            }}</span>
+            <span class="status-name">Processing</span>
+          </div>
+          <div class="status-card status-shipped">
+            <span class="status-count">{{ stats.ordersByStatus.shipped }}</span>
+            <span class="status-name">Shipped</span>
+          </div>
+          <div class="status-card status-out-for-delivery">
+            <span class="status-count">{{
+              stats.ordersByStatus.outForDelivery
+            }}</span>
+            <span class="status-name">Out for Delivery</span>
+          </div>
+          <div class="status-card status-delivered">
+            <span class="status-count">{{
+              stats.ordersByStatus.delivered
+            }}</span>
+            <span class="status-name">Delivered</span>
+          </div>
+          <div class="status-card status-cancelled">
+            <span class="status-count">{{
+              stats.ordersByStatus.cancelled
+            }}</span>
+            <span class="status-name">Cancelled</span>
+          </div>
+          <div class="status-card status-returned">
+            <span class="status-count">{{
+              stats.ordersByStatus.returned
+            }}</span>
+            <span class="status-name">Returned</span>
+          </div>
+          <div class="status-card status-refunded">
+            <span class="status-count">{{
+              stats.ordersByStatus.refunded
+            }}</span>
+            <span class="status-name">Refunded</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Orders -->
+      <section class="recent-orders-section" *ngIf="stats.recentOrders?.length">
+        <div class="section-header">
+          <h3 class="section-title">Recent Orders</h3>
+          <a class="btn btn-ghost-sm" routerLink="/seller/orders">View All</a>
+        </div>
+        <div class="recent-orders-table">
+          <div class="table-head">
+            <span>Order #</span>
+            <span>Buyer</span>
+            <span>Amount</span>
+            <span>Status</span>
+            <span>Date</span>
+          </div>
+          <div class="table-row" *ngFor="let order of stats.recentOrders">
+            <span class="order-number">{{
+              order.orderNumber || order.id
+            }}</span>
+            <span>{{ buyerName(order.buyer) }}</span>
+            <span>{{ formatCurrency(order.totalAmount) }}</span>
+            <span
+              class="order-status"
+              [ngClass]="'os-' + order.status.toLowerCase()"
+            >
+              {{ order.status }}
+            </span>
+            <span>{{ order.createdAt | date: "dd MMM yyyy" }}</span>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+  </ng-container>
+
+  <!-- Quick Actions for non-approved sellers -->
+  <section class="quick-actions" *ngIf="!isApproved">
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="action-cards">
+      <a class="action-card" routerLink="/seller/onboarding">
+        <span class="action-icon">📝</span>
+        <span class="action-label">{{
+          profile ? "Update Profile" : "Start Onboarding"
+        }}</span>
+        <span class="action-desc"
+          >Fill in your business details to get approved</span
+        >
       </a>
     </div>
   </section>
-</section>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="page-loading">
+    <div class="spinner"></div>
+    <p>Loading your dashboard...</p>
+  </div>
+</ng-template>

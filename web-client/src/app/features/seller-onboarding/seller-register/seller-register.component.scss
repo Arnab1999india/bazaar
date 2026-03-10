@@ -92,3 +92,17 @@
 .success {
   color: #16a34a;
 }
+
+.login-link {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+
+  .link {
+    color: #6366f1;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+}

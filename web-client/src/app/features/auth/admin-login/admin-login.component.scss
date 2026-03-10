@@ -37,6 +37,36 @@
   color: #ffffff;
 }
 
-.error {
-  color: #dc2626;
+.error { color: #dc2626; }
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 0.25rem 0 1.25rem;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+}
+
+.links {
+  margin-top: 0.75rem;
+  text-align: center;
+  .link { color: #6366f1; cursor: pointer; font-size: 0.875rem; }
+}
+
+.password-input {
+  position: relative;
+  .form-control { padding-right: 4rem; }
+  .eye-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 0.8rem;
+  }
 }

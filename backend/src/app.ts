@@ -54,6 +54,8 @@ import sellerRoutes from "./routes/seller.routes";
 import adminSellerRoutes from "./routes/admin.seller.routes";
 import sellerOrderRoutes from "./routes/seller-order.routes";
 import paymentRoutes from "./routes/payment.routes";
+import adminRoutes from "./routes/admin.routes";
+import sellerStatsRoutes from "./routes/seller-stats.routes";
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -65,7 +67,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/sellers", sellerRoutes);
 app.use("/api/admin/sellers", adminSellerRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/seller/orders", sellerOrderRoutes);
+app.use("/api/seller", sellerStatsRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api", catalogRoutes);
 

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ProductService } from "../services/product.service";
+import { UploadUtil } from "../utils/upload.util";
 
 export class ProductController {
   /**
@@ -130,6 +131,28 @@ export class ProductController {
       res
         .status(500)
         .json({ success: false, message: "Failed to update product" });
+    }
+  }
+
+  /**
+   * Upload product images to Cloudinary
+   * @route POST /api/products/upload-images
+   */
+  async uploadImages(req: Request, res: Response) {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "No files provided" });
+      }
+      const results = await UploadUtil.uploadMultipleImages(files, "products");
+      res.json({ success: true, data: results.map((r) => r.url) });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to upload images",
+      });
     }
   }
 

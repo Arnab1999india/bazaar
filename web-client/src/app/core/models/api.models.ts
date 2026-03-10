@@ -56,6 +56,7 @@ export interface ProductAttribute {
 
 export interface Product {
   id: string;
+  _id?: string;
   name: string;
   price: number;
   category: string;
@@ -246,6 +247,70 @@ export interface SellerProfile {
   approvedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+// Seller Stats
+export interface SellerStats {
+  summary: {
+    totalOrders: number;
+    totalRevenue: number;
+    avgOrderValue: number;
+    totalProducts: number;
+  };
+  weekly: { orders: number; revenue: number };
+  monthly: {
+    orders: number;
+    revenue: number;
+    lastMonthRevenue: number;
+    growthRate: string | null;
+  };
+  ordersByStatus: {
+    pending: number;
+    confirmed: number;
+    processing: number;
+    packed: number;
+    shipped: number;
+    outForDelivery: number;
+    delivered: number;
+    cancelled: number;
+    returned: number;
+    refunded: number;
+  };
+  recentOrders: Array<{
+    id: string;
+    orderNumber: string;
+    status: string;
+    totalAmount: number;
+    createdAt: string;
+    buyer: { name: string; email: string } | string;
+  }>;
+}
+
+// Admin Stats
+export interface AdminStats {
+  users: { total: number; sellers: number; buyers: number };
+  sellers: { pending: number; approved: number };
+  orders: {
+    total: number;
+    weekly: number;
+    monthly: number;
+    byStatus: Record<string, number>;
+  };
+  revenue: {
+    total: number;
+    weekly: number;
+    monthly: number;
+    avgOrderValue: number;
+  };
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isVerified: boolean;
+  createdAt: string;
 }
 
 export interface SellerProfileInput {

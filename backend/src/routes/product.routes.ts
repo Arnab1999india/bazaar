@@ -4,6 +4,7 @@ import { auth, authorize } from "../middlewares/auth.middleware";
 import { requireApprovedSeller } from "../middlewares/sellerApproval.middleware";
 import { UserRole } from "../interfaces/user.interface";
 import { asyncHandler } from "../utils/asyncHandler";
+import { productImageUpload } from "../middlewares/upload.middleware";
 
 const router = Router();
 const productController = new ProductController();
@@ -27,6 +28,14 @@ router.get(
 );
 
 // Protected routes (require authentication)
+router.post(
+  "/upload-images",
+  auth,
+  authorize(UserRole.SELLER, UserRole.ADMIN),
+  requireApprovedSeller,
+  productImageUpload.array("images", 5),
+  asyncHandler(productController.uploadImages.bind(productController))
+);
 router.post(
   "/",
   auth,

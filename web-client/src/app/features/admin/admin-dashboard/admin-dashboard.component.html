@@ -1,106 +1,541 @@
-<section class="admin-dashboard">
-  <header class="page-header">
-    <div>
-      <h2>Seller approvals</h2>
-      <p>Review onboarding submissions and approve new sellers.</p>
+<div class="admin-portal">
+  <!-- Sidebar Navigation -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🛒</span>
+      <span>Bazaar Admin</span>
     </div>
-    <div class="filters">
+    <nav class="sidebar-nav">
       <button
         type="button"
-        class="btn btn-ghost"
-        [class.active]="statusFilter === 'pending'"
-        (click)="setStatusFilter('pending')"
+        class="nav-item"
+        [class.active]="activeTab === 'overview'"
+        (click)="setTab('overview')"
       >
-        Pending
+        <span class="nav-icon">📊</span> Overview
       </button>
       <button
         type="button"
-        class="btn btn-ghost"
-        [class.active]="statusFilter === 'approved'"
-        (click)="setStatusFilter('approved')"
+        class="nav-item"
+        [class.active]="activeTab === 'sellers'"
+        (click)="setTab('sellers')"
       >
-        Approved
+        <span class="nav-icon">🏪</span> Sellers
       </button>
       <button
         type="button"
-        class="btn btn-ghost"
-        [class.active]="statusFilter === 'rejected'"
-        (click)="setStatusFilter('rejected')"
+        class="nav-item"
+        [class.active]="activeTab === 'users'"
+        (click)="setTab('users')"
       >
-        Rejected
+        <span class="nav-icon">👥</span> Users
       </button>
-    </div>
-  </header>
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeTab === 'orders'"
+        (click)="setTab('orders')"
+      >
+        <span class="nav-icon">📦</span> Orders
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeTab === 'admins'"
+        (click)="setTab('admins')"
+      >
+        <span class="nav-icon">🔐</span> Admins
+      </button>
+    </nav>
+  </aside>
 
-  <p class="status-msg" *ngIf="actionMessage">{{ actionMessage }}</p>
-  <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- ══════════ OVERVIEW TAB ══════════ -->
+    <section *ngIf="activeTab === 'overview'">
+      <div class="page-header">
+        <div>
+          <h2>Platform Overview</h2>
+          <p>Real-time stats across Bazaar marketplace.</p>
+        </div>
+      </div>
 
-  <div class="table" *ngIf="!isLoading; else loadingState">
-    <div class="table-row table-header">
-      <span>Business</span>
-      <span>Owner</span>
-      <span>Contact</span>
-      <span>Status</span>
-      <span class="actions-col">Actions</span>
-    </div>
+      <div class="loading-block" *ngIf="isLoadingStats">
+        Loading platform stats...
+      </div>
 
-    <div class="table-row" *ngFor="let seller of sellers">
-      <div>
-        <strong>{{ seller.businessName }}</strong>
-        <small>{{ seller.businessType }}</small>
-      </div>
-      <div>
-        <span>{{ seller.user }}</span>
-        <small>{{ seller.legalName || '—' }}</small>
-      </div>
-      <div>
-        <span>{{ seller.phone }}</span>
-        <small>{{ seller.shopAddress.city }}, {{ seller.shopAddress.state }}</small>
-      </div>
-      <div>
-        <span
-          class="pill"
-          [class.approved]="seller.status === 'approved'"
-          [class.rejected]="seller.status === 'rejected'"
-        >
-          {{ seller.status }}
-        </span>
-      </div>
-      <div class="actions-col">
-        <button
-          class="btn btn-primary"
-          type="button"
-          (click)="approveSeller(seller.user)"
-          *ngIf="seller.status !== 'approved'"
-        >
-          Approve
-        </button>
-        <div class="reject-row" *ngIf="seller.status !== 'rejected'">
-          <input
-            class="form-control"
-            [(ngModel)]="rejectReasons[seller.user]"
-            placeholder="Reason"
-          />
+      <ng-container *ngIf="!isLoadingStats && platformStats">
+        <!-- User Stats -->
+        <div class="stats-group-title">Users</div>
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-indigo">
+            <span class="kpi-label">Total Users</span>
+            <span class="kpi-value">{{ platformStats.users.total }}</span>
+          </div>
+          <div class="kpi-card kpi-blue">
+            <span class="kpi-label">Buyers</span>
+            <span class="kpi-value">{{ platformStats.users.buyers }}</span>
+          </div>
+          <div class="kpi-card kpi-violet">
+            <span class="kpi-label">Sellers</span>
+            <span class="kpi-value">{{ platformStats.users.sellers }}</span>
+          </div>
+          <div class="kpi-card kpi-amber">
+            <span class="kpi-label">Pending Approvals</span>
+            <span class="kpi-value">{{ platformStats.sellers.pending }}</span>
+          </div>
+        </div>
+
+        <!-- Revenue Stats -->
+        <div class="stats-group-title" style="margin-top: 1.5rem">Revenue</div>
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-green">
+            <span class="kpi-label">Total Revenue</span>
+            <span class="kpi-value">{{
+              formatCurrency(platformStats.revenue.total)
+            }}</span>
+          </div>
+          <div class="kpi-card kpi-teal">
+            <span class="kpi-label">This Week</span>
+            <span class="kpi-value">{{
+              formatCurrency(platformStats.revenue.weekly)
+            }}</span>
+          </div>
+          <div class="kpi-card kpi-emerald">
+            <span class="kpi-label">This Month</span>
+            <span class="kpi-value">{{
+              formatCurrency(platformStats.revenue.monthly)
+            }}</span>
+          </div>
+          <div class="kpi-card kpi-lime">
+            <span class="kpi-label">Avg Order Value</span>
+            <span class="kpi-value">{{
+              formatCurrency(platformStats.revenue.avgOrderValue)
+            }}</span>
+          </div>
+        </div>
+
+        <!-- Order Stats -->
+        <div class="stats-group-title" style="margin-top: 1.5rem">Orders</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Total Orders</span>
+            <span class="kpi-value">{{ platformStats.orders.total }}</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">This Week</span>
+            <span class="kpi-value">{{ platformStats.orders.weekly }}</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">This Month</span>
+            <span class="kpi-value">{{ platformStats.orders.monthly }}</span>
+          </div>
+          <div class="kpi-card kpi-green">
+            <span class="kpi-label">Delivered</span>
+            <span class="kpi-value">{{
+              platformStats.orders.byStatus["delivered"] || 0
+            }}</span>
+          </div>
+        </div>
+
+        <!-- Order Breakdown -->
+        <div class="order-status-breakdown">
+          <div class="breakdown-title">Order Status Breakdown</div>
+          <div class="breakdown-grid">
+            <div
+              class="breakdown-item"
+              *ngFor="let entry of objectKeys(platformStats.orders.byStatus)"
+            >
+              <span class="bs-count">{{
+                platformStats.orders.byStatus[entry]
+              }}</span>
+              <span class="bs-label">{{ entry }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+
+    <!-- ══════════ SELLERS TAB ══════════ -->
+    <section *ngIf="activeTab === 'sellers'">
+      <div class="page-header">
+        <div>
+          <h2>Seller Approvals</h2>
+          <p>Review and approve seller onboarding submissions.</p>
+        </div>
+        <div class="filter-tabs">
           <button
-            class="btn btn-danger"
             type="button"
-            (click)="rejectSeller(seller.user)"
+            class="filter-btn"
+            [class.active]="sellerStatusFilter === 'pending'"
+            (click)="setSellerFilter('pending')"
           >
-            Reject
+            Pending
+          </button>
+          <button
+            type="button"
+            class="filter-btn"
+            [class.active]="sellerStatusFilter === 'approved'"
+            (click)="setSellerFilter('approved')"
+          >
+            Approved
+          </button>
+          <button
+            type="button"
+            class="filter-btn"
+            [class.active]="sellerStatusFilter === 'rejected'"
+            (click)="setSellerFilter('rejected')"
+          >
+            Rejected
           </button>
         </div>
-        <span class="muted" *ngIf="seller.status === 'rejected'">
-          {{ seller.rejectionReason || 'Rejected' }}
-        </span>
       </div>
-    </div>
 
-    <div class="empty" *ngIf="sellers.length === 0">
-      No sellers found for this filter.
-    </div>
-  </div>
+      <p class="success-msg" *ngIf="sellerActionMessage">
+        {{ sellerActionMessage }}
+      </p>
+      <p class="error-msg" *ngIf="sellerErrorMessage">
+        {{ sellerErrorMessage }}
+      </p>
 
-  <ng-template #loadingState>
-    <div class="loading">Loading seller approvals...</div>
-  </ng-template>
-</section>
+      <div class="loading-block" *ngIf="isLoadingSellers">
+        Loading sellers...
+      </div>
+
+      <div class="data-table" *ngIf="!isLoadingSellers">
+        <div class="table-head">
+          <span>Business</span>
+          <span>Owner / Legal</span>
+          <span>Contact</span>
+          <span>Status</span>
+          <span>Actions</span>
+        </div>
+
+        <div class="table-row" *ngFor="let seller of sellers">
+          <div>
+            <strong>{{ seller.businessName }}</strong>
+            <small>{{ seller.businessType }}</small>
+          </div>
+          <div>
+            <span>{{ seller.user }}</span>
+            <small>{{ seller.legalName || "—" }}</small>
+          </div>
+          <div>
+            <span>{{ seller.phone }}</span>
+            <small
+              >{{ seller.shopAddress.city }},
+              {{ seller.shopAddress.state }}</small
+            >
+          </div>
+          <div>
+            <span
+              class="pill"
+              [class.pill-approved]="seller.status === 'approved'"
+              [class.pill-rejected]="seller.status === 'rejected'"
+            >
+              {{ seller.status }}
+            </span>
+          </div>
+          <div class="actions-col">
+            <button
+              class="btn btn-sm btn-success"
+              type="button"
+              (click)="approveSeller(seller.user)"
+              *ngIf="seller.status !== 'approved'"
+            >
+              Approve
+            </button>
+            <div class="reject-row" *ngIf="seller.status !== 'rejected'">
+              <input
+                class="form-input-sm"
+                [(ngModel)]="rejectReasons[seller.user]"
+                placeholder="Rejection reason"
+              />
+              <button
+                class="btn btn-sm btn-danger"
+                type="button"
+                (click)="rejectSeller(seller.user)"
+              >
+                Reject
+              </button>
+            </div>
+            <span class="muted-text" *ngIf="seller.status === 'rejected'">{{
+              seller.rejectionReason || "Rejected"
+            }}</span>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="sellers.length === 0">
+          No sellers found for this filter.
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ USERS TAB ══════════ -->
+    <section *ngIf="activeTab === 'users'">
+      <div class="page-header">
+        <div>
+          <h2>User Management</h2>
+          <p>All registered buyers and sellers on the platform.</p>
+        </div>
+        <div class="filter-tabs">
+          <button
+            type="button"
+            class="filter-btn"
+            [class.active]="userRoleFilter === 'all'"
+            (click)="setUserFilter('all')"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            class="filter-btn"
+            [class.active]="userRoleFilter === 'customer'"
+            (click)="setUserFilter('customer')"
+          >
+            Buyers
+          </button>
+          <button
+            type="button"
+            class="filter-btn"
+            [class.active]="userRoleFilter === 'seller'"
+            (click)="setUserFilter('seller')"
+          >
+            Sellers
+          </button>
+        </div>
+      </div>
+
+      <p class="error-msg" *ngIf="userErrorMessage">{{ userErrorMessage }}</p>
+      <div class="loading-block" *ngIf="isLoadingUsers">Loading users...</div>
+
+      <div class="data-table" *ngIf="!isLoadingUsers">
+        <div
+          class="table-head"
+          style="grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr"
+        >
+          <span>Name</span>
+          <span>Email</span>
+          <span>Role</span>
+          <span>Verified</span>
+          <span>Joined</span>
+        </div>
+        <div
+          class="table-row"
+          style="grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr"
+          *ngFor="let user of users"
+        >
+          <span>{{ user.name }}</span>
+          <span>{{ user.email }}</span>
+          <span
+            ><span
+              class="pill"
+              [class.pill-approved]="user.role === 'seller'"
+              >{{ user.role }}</span
+            ></span
+          >
+          <span>{{ user.isVerified ? "✅" : "❌" }}</span>
+          <span>{{ user.createdAt | date: "dd MMM yyyy" }}</span>
+        </div>
+        <div class="empty-state" *ngIf="users.length === 0">
+          No users found.
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ ORDERS TAB ══════════ -->
+    <section *ngIf="activeTab === 'orders'">
+      <div class="page-header">
+        <div>
+          <h2>Order Management</h2>
+          <p>All orders across the platform.</p>
+        </div>
+        <div class="filter-tabs">
+          <button
+            type="button"
+            class="filter-btn"
+            *ngFor="let s of orderStatuses"
+            [class.active]="orderStatusFilter === s"
+            (click)="setOrderFilter(s)"
+          >
+            {{ s === "all" ? "All" : s }}
+          </button>
+        </div>
+      </div>
+
+      <p class="error-msg" *ngIf="orderErrorMessage">{{ orderErrorMessage }}</p>
+      <div class="loading-block" *ngIf="isLoadingOrders">Loading orders...</div>
+
+      <div class="data-table" *ngIf="!isLoadingOrders">
+        <div
+          class="table-head"
+          style="grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1.5fr"
+        >
+          <span>Order #</span>
+          <span>Buyer</span>
+          <span>Amount</span>
+          <span>Status</span>
+          <span>Date</span>
+        </div>
+        <div
+          class="table-row"
+          style="grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1.5fr"
+          *ngFor="let order of orders"
+        >
+          <span class="mono">{{ order.id }}</span>
+          <span>{{ buyerName(order.buyer) }}</span>
+          <span>{{ formatCurrency(order.totalAmount) }}</span>
+          <span
+            ><span
+              class="pill"
+              [class.pill-approved]="order.status === 'delivered'"
+              >{{ order.status }}</span
+            ></span
+          >
+          <span>{{ order.createdAt | date: "dd MMM yyyy" }}</span>
+        </div>
+        <div class="empty-state" *ngIf="orders.length === 0">
+          No orders found.
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ ADMINS TAB ══════════ -->
+    <section *ngIf="activeTab === 'admins'">
+      <div class="page-header">
+        <div>
+          <h2>Admin Accounts</h2>
+          <p>
+            Manage platform administrators. Only admins can create new admin
+            accounts.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="toggleCreateAdminForm()"
+        >
+          {{ showCreateAdminForm ? "Cancel" : "+ Create Admin" }}
+        </button>
+      </div>
+
+      <p class="success-msg" *ngIf="adminSuccessMessage">
+        {{ adminSuccessMessage }}
+      </p>
+      <p class="error-msg" *ngIf="adminErrorMessage">{{ adminErrorMessage }}</p>
+
+      <!-- Create Admin Form -->
+      <div class="create-admin-form" *ngIf="showCreateAdminForm">
+        <h3>Create New Admin Account</h3>
+        <form [formGroup]="createAdminForm" (ngSubmit)="submitCreateAdmin()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input
+                type="text"
+                class="form-input"
+                formControlName="name"
+                placeholder="Admin Name"
+              />
+              <span
+                class="field-error"
+                *ngIf="
+                  createAdminForm.get('name')?.invalid &&
+                  createAdminForm.get('name')?.touched
+                "
+              >
+                Name is required (min 2 characters).
+              </span>
+            </div>
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input
+                type="email"
+                class="form-input"
+                formControlName="email"
+                placeholder="admin@example.com"
+              />
+              <span
+                class="field-error"
+                *ngIf="
+                  createAdminForm.get('email')?.invalid &&
+                  createAdminForm.get('email')?.touched
+                "
+              >
+                A valid email is required.
+              </span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Password *</label>
+              <input
+                type="password"
+                class="form-input"
+                formControlName="password"
+                placeholder="Min 6 characters"
+              />
+              <span
+                class="field-error"
+                *ngIf="
+                  createAdminForm.get('password')?.invalid &&
+                  createAdminForm.get('password')?.touched
+                "
+              >
+                Password must be at least 6 characters.
+              </span>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password *</label>
+              <input
+                type="password"
+                class="form-input"
+                formControlName="confirmPassword"
+                placeholder="Repeat password"
+              />
+              <span
+                class="field-error"
+                *ngIf="
+                  createAdminForm.get('confirmPassword')?.errors?.['mustMatch']
+                "
+              >
+                Passwords do not match.
+              </span>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="isCreatingAdmin"
+            >
+              {{ isCreatingAdmin ? "Creating..." : "Create Admin Account" }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Admins List -->
+      <div class="loading-block" *ngIf="isLoadingAdmins">Loading admins...</div>
+      <div class="data-table" *ngIf="!isLoadingAdmins">
+        <div class="table-head" style="grid-template-columns: 2fr 3fr 1.5fr">
+          <span>Name</span>
+          <span>Email</span>
+          <span>Joined</span>
+        </div>
+        <div
+          class="table-row"
+          style="grid-template-columns: 2fr 3fr 1.5fr"
+          *ngFor="let admin of admins"
+        >
+          <span>{{ admin.name }}</span>
+          <span>{{ admin.email }}</span>
+          <span>{{ admin.createdAt | date: "dd MMM yyyy" }}</span>
+        </div>
+        <div class="empty-state" *ngIf="admins.length === 0">
+          No admin accounts found.
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

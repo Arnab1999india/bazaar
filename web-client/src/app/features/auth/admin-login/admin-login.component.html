@@ -1,6 +1,7 @@
 <div class="login-container">
   <div class="login-card">
     <h2>Admin Sign In</h2>
+    <p class="subtitle">Restricted access — admin accounts are created by existing admins only.</p>
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">

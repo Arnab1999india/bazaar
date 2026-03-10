@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
     create: '/products',
     update: (productId: string) => `/products/${productId}`,
     delete: (productId: string) => `/products/${productId}`,
+    uploadImages: '/products/upload-images',
   },
   merchandising: {
     categories: '/categories',
@@ -71,10 +72,18 @@ export const API_ENDPOINTS = {
     me: '/sellers/me',
     onboard: '/sellers/onboard',
     update: '/sellers/me',
+    stats: '/seller/stats',
   },
   adminSellers: {
     list: '/admin/sellers',
     approve: (sellerId: string) => `/admin/sellers/${sellerId}/approve`,
     reject: (sellerId: string) => `/admin/sellers/${sellerId}/reject`,
+  },
+  admin: {
+    stats: '/admin/stats',
+    users: '/admin/users',
+    orders: '/admin/orders',
+    listAdmins: '/admin/users/admins',
+    createAdmin: '/admin/users/admins',
   },
 } as const;

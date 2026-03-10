@@ -1,6 +1,7 @@
 <div class="login-container">
   <div class="login-card">
     <h2>Seller Sign In</h2>
+    <p class="subtitle">Welcome back! Sign in to your seller account.</p>
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
@@ -42,10 +43,15 @@
         {{ isLoading ? "Signing in..." : "Sign In" }}
       </button>
       <div class="links">
-        <a (click)="navigateToForgotPassword()" class="link"
-          >Forgot Password?</a
-        >
+        <a (click)="navigateToForgotPassword()" class="link">Forgot Password?</a>
       </div>
     </form>
+
+    <div class="divider">
+      <span>New to Bazaar as a seller?</span>
+    </div>
+    <a routerLink="/auth/seller-register" class="btn btn-secondary btn-block">
+      Create Seller Account
+    </a>
   </div>
 </div>

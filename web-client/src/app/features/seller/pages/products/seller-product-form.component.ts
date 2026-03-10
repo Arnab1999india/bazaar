@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   FormBuilder,
   FormArray,
@@ -7,13 +8,20 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../../../core/services/catalog.service';
+
+interface ImageEntry {
+  preview: string;
+  url: string;
+  uploading: boolean;
+  error?: string;
+}
 
 @Component({
   selector: 'app-seller-product-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './seller-product-form.component.html',
   styleUrl: './seller-product-form.component.scss',
 })
@@ -23,6 +31,13 @@ export class SellerProductFormComponent implements OnInit {
   isLoading = false;
   productId: string | null = null;
   errorMessage = '';
+
+  imageList: ImageEntry[] = [];
+  currentSlide = 0;
+  urlInput = '';
+
+  readonly MAX_IMAGES = 5;
+  readonly MIN_IMAGES = 1;
 
   constructor(
     private fb: FormBuilder,
@@ -36,8 +51,7 @@ export class SellerProductFormComponent implements OnInit {
       price: [null, [Validators.required, Validators.min(1)]],
       category: ['', [Validators.required]],
       brand: [''],
-      tags: [''], // Will accept comma-separated strings
-      imageUrls: ['', [Validators.required]], // Comma-separated URLs
+      tags: [''],
       stockStatus: ['in-stock', [Validators.required]],
       variants: this.fb.array([]),
     });
@@ -51,7 +65,7 @@ export class SellerProductFormComponent implements OnInit {
     }
   }
 
-  loadProduct(id: string) {
+  loadProduct(id: string): void {
     this.isLoading = true;
     this.catalogService.getProduct(id).subscribe({
       next: (response) => {
@@ -63,9 +77,16 @@ export class SellerProductFormComponent implements OnInit {
           category: product.category,
           brand: product.brand ?? '',
           tags: product.tags?.join(', ') ?? '',
-          imageUrls: product.imageUrl?.join(', ') ?? '',
           stockStatus: product.stockStatus ?? 'in-stock',
         });
+
+        this.imageList = (product.imageUrl ?? []).map((url) => ({
+          preview: url,
+          url,
+          uploading: false,
+        }));
+        if (this.imageList.length > 0) this.currentSlide = 0;
+
         this.variants.clear();
         (product.variants ?? []).forEach((variant) => {
           this.variants.push(
@@ -112,10 +133,100 @@ export class SellerProductFormComponent implements OnInit {
     this.variants.removeAt(index);
   }
 
+  // ---- Image management ----
+
+  addImageFromUrl(): void {
+    const url = this.urlInput.trim();
+    if (!url) return;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      this.errorMessage = 'Image URL must start with http:// or https://';
+      return;
+    }
+    if (this.imageList.length >= this.MAX_IMAGES) return;
+    this.imageList.push({ preview: url, url, uploading: false });
+    this.currentSlide = this.imageList.length - 1;
+    this.urlInput = '';
+    this.errorMessage = '';
+  }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const remaining = this.MAX_IMAGES - this.imageList.length;
+    const files = Array.from(input.files).slice(0, remaining);
+    input.value = '';
+
+    files.forEach((file) => {
+      const entry: ImageEntry = { preview: '', url: '', uploading: true };
+      this.imageList.push(entry);
+      this.currentSlide = this.imageList.length - 1;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        entry.preview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+
+      this.catalogService.uploadProductImages([file]).subscribe({
+        next: (response) => {
+          entry.url = response.data[0];
+          entry.uploading = false;
+          entry.error = undefined;
+        },
+        error: () => {
+          entry.error = 'Upload failed. Remove and try again.';
+          entry.uploading = false;
+        },
+      });
+    });
+  }
+
+  removeImage(index: number): void {
+    this.imageList.splice(index, 1);
+    if (this.currentSlide >= this.imageList.length) {
+      this.currentSlide = Math.max(0, this.imageList.length - 1);
+    }
+  }
+
+  prevSlide(): void {
+    if (this.currentSlide > 0) this.currentSlide--;
+  }
+
+  nextSlide(): void {
+    if (this.currentSlide < this.imageList.length - 1) this.currentSlide++;
+  }
+
+  goToSlide(index: number): void {
+    this.currentSlide = index;
+  }
+
+  get hasUploadingImages(): boolean {
+    return this.imageList.some((img) => img.uploading);
+  }
+
+  get slideTranslate(): string {
+    return `translateX(${-this.currentSlide * 100}%)`;
+  }
+
+  // ---- Submit ----
+
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.errorMessage = 'Please fill all required fields.';
+      return;
+    }
+    if (this.imageList.length < this.MIN_IMAGES) {
+      this.errorMessage = 'At least 1 image is required.';
+      return;
+    }
+    if (this.hasUploadingImages) {
+      this.errorMessage = 'Please wait for all images to finish uploading.';
+      return;
+    }
+    if (this.imageList.some((img) => !img.url)) {
+      this.errorMessage =
+        'Some images failed to upload. Remove them and try again.';
       return;
     }
 
@@ -132,12 +243,9 @@ export class SellerProductFormComponent implements OnInit {
       stockStatus: formData.stockStatus,
       tags: String(formData.tags ?? '')
         .split(',')
-        .map((tag) => tag.trim())
+        .map((tag: string) => tag.trim())
         .filter(Boolean),
-      imageUrl: String(formData.imageUrls ?? '')
-        .split(',')
-        .map((url) => url.trim())
-        .filter(Boolean),
+      imageUrl: this.imageList.map((img) => img.url),
       variants: (formData.variants ?? [])
         .filter((variant: any) => variant?.sku)
         .map((variant: any) => ({
@@ -150,13 +258,12 @@ export class SellerProductFormComponent implements OnInit {
             .filter(Boolean)
             .reduce<Record<string, string>>((acc, pair) => {
               const [key, value] = pair.split(':').map((part) => part.trim());
-              if (key && value) {
-                acc[key] = value;
-              }
+              if (key && value) acc[key] = value;
               return acc;
             }, {}),
         })),
     };
+
     const request$ =
       this.isEditMode && this.productId
         ? this.catalogService.updateProduct(this.productId, productPayload)
@@ -170,8 +277,7 @@ export class SellerProductFormComponent implements OnInit {
       error: (err) => {
         this.isLoading = false;
         this.errorMessage =
-          err?.error?.message ||
-          'Unable to save the product right now.';
+          err?.error?.message || 'Unable to save the product right now.';
       },
     });
   }
