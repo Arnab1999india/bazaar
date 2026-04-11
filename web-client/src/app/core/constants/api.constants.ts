@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
     initiateRegistration: '/auth/initiate-registration',
     verifyRegistration: '/auth/verify-registration',
     login: '/auth/login',
+    googleToken: '/auth/google/token',
     refresh: '/auth/refresh',
     logout: '/auth/logout',
     changePassword: '/auth/change-password',
@@ -51,6 +52,14 @@ export const API_ENDPOINTS = {
     create: '/orders',
     list: '/orders',
     detail: (orderId: string) => `/orders/${orderId}`,
+    cancel: (orderId: string) => `/orders/${orderId}/cancel`,
+    adminUpdateStatus: (orderId: string) => `/orders/admin/${orderId}/status`,
+  },
+  reviews: {
+    byProduct: (productId: string) => `/reviews/product/${productId}`,
+    create: '/reviews',
+    update: (reviewId: string) => `/reviews/${reviewId}`,
+    delete: (reviewId: string) => `/reviews/${reviewId}`,
   },
   sellerOrders: {
     list: '/seller/orders',
@@ -61,6 +70,12 @@ export const API_ENDPOINTS = {
     createOrder: '/payment/create-order',
     verify: '/payment/verify',
     getByOrderId: (orderId: string) => `/payment/order/${orderId}`,
+    refund: '/payment/refund',
+  },
+  wishlist: {
+    get: '/wishlist',
+    add: (productId: string) => `/wishlist/${productId}`,
+    remove: (productId: string) => `/wishlist/${productId}`,
   },
   users: {
     me: '/users/me',
@@ -85,5 +100,7 @@ export const API_ENDPOINTS = {
     orders: '/admin/orders',
     listAdmins: '/admin/users/admins',
     createAdmin: '/admin/users/admins',
+    categories: '/admin/categories',
+    categoryById: (id: string) => `/admin/categories/${id}`,
   },
 } as const;

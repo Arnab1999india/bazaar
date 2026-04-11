@@ -1,25 +1,25 @@
 <div class="product-card" [class.out-of-stock]="isOutOfStock()">
+  <!-- Image zone -->
   <div class="product-image">
-    <!-- Out of Stock Badge -->
-    <div class="stock-badge" *ngIf="isOutOfStock()">
-      <span>Out of Stock</span>
-    </div>
+    <div class="stock-badge" *ngIf="isOutOfStock()">Out of Stock</div>
+
+    <button class="wishlist-btn" (click)="toggleWishlist($event)" [class.active]="isWishlisted" title="Add to wishlist" aria-label="Toggle wishlist">
+      {{ isWishlisted ? '♥' : '♡' }}
+    </button>
 
     <img
-      [src]="
-        product.imageUrl?.[0] ||
-        'https://via.placeholder.com/320x240?text=Product'
-      "
+      [src]="product.imageUrl?.[0] || 'https://via.placeholder.com/320x240?text=Product'"
       [alt]="product.name"
+      loading="lazy"
     />
   </div>
 
+  <!-- Body -->
   <div class="product-body">
     <h3>{{ product.name }}</h3>
-    <p class="meta">{{ product.brand }} • {{ product.category }}</p>
-    <p class="price">₹{{ product.price | number: "1.0-0" }}</p>
+    <p class="meta">{{ product.brand }} · {{ product.category }}</p>
+    <p class="price">₹{{ product.price | number:'1.0-0' }}</p>
 
-    <!-- Stock Status -->
     <div class="stock-status">
       <span
         class="stock-indicator"
@@ -28,30 +28,22 @@
       >
         {{ getStockText() }}
       </span>
-      <span
-        class="stock-count"
-        *ngIf="product.totalStock !== undefined && product.totalStock > 0"
-      >
-        {{ product.totalStock }} available
+      <span class="stock-count" *ngIf="product.totalStock !== undefined && product.totalStock > 0">
+        {{ product.totalStock }} left
       </span>
     </div>
   </div>
 
+  <!-- Actions -->
   <div class="product-actions">
-    <button
-      type="button"
-      class="btn btn-secondary"
-      (click)="view.emit(product)"
-    >
-      View
-    </button>
+    <button type="button" class="btn btn-secondary" (click)="view.emit(product)">View Details</button>
     <button
       type="button"
       class="btn btn-primary"
       [disabled]="isOutOfStock()"
       (click)="addToCart.emit(product)"
     >
-      {{ isOutOfStock() ? "Out of Stock" : "Add to Cart" }}
+      {{ isOutOfStock() ? 'Out of Stock' : 'Add to Cart' }}
     </button>
     <button
       type="button"
@@ -59,7 +51,7 @@
       [disabled]="isOutOfStock()"
       (click)="buyNow.emit(product)"
     >
-      {{ isOutOfStock() ? "Unavailable" : "Buy Now" }}
+      {{ isOutOfStock() ? 'Unavailable' : 'Buy Now' }}
     </button>
   </div>
 </div>

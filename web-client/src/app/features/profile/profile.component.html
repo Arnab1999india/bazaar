@@ -1,11 +1,15 @@
 <section class="profile-container">
   <div class="profile-header">
-    @if (currentView !== 'dashboard') {
+    @if (currentView === 'order-detail') {
     <a (click)="setView('dashboard')" class="breadcrumb-link">Your Account</a>
     <span class="breadcrumb-separator">›</span>
-    <span class="breadcrumb-current">
-      {{ currentView | titlecase }}
-    </span>
+    <a (click)="backToOrders()" class="breadcrumb-link">Your Orders</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">Order Detail</span>
+    } @else if (currentView !== 'dashboard') {
+    <a (click)="setView('dashboard')" class="breadcrumb-link">Your Account</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">{{ currentView | titlecase }}</span>
     } @else {
     <h2>Your Account</h2>
     }
@@ -18,94 +22,308 @@
       subtitle="Track, return, or buy things again"
       icon="https://cdn-icons-png.flaticon.com/512/3500/3500833.png"
       (cardClick)="setView('orders')"
-    >
-    </app-profile-card>
+    ></app-profile-card>
 
     <app-profile-card
       title="Login & security"
       subtitle="Edit login, name, and mobile number"
       icon="https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
       (cardClick)="setView('security')"
-    >
-    </app-profile-card>
+    ></app-profile-card>
 
     <app-profile-card
       title="Your Addresses"
       subtitle="Edit addresses for orders and gifts"
       icon="https://cdn-icons-png.flaticon.com/512/535/535239.png"
       (cardClick)="setView('addresses')"
-    >
-    </app-profile-card>
+    ></app-profile-card>
 
     <app-profile-card
       title="Bazaar Pay Balance"
       subtitle="Add money to your wallet"
       icon="https://cdn-icons-png.flaticon.com/512/217/217853.png"
       (cardClick)="setView('wallet')"
-    >
-    </app-profile-card>
+    ></app-profile-card>
 
     <app-profile-card
       title="Contact Us"
       subtitle="Contact our customer service"
       icon="https://cdn-icons-png.flaticon.com/512/10309/10309341.png"
       (cardClick)="setView('contact')"
-    >
-    </app-profile-card>
+    ></app-profile-card>
 
     <app-profile-card
       title="Sign Out"
       subtitle="Securely log out of your account"
       icon="https://cdn-icons-png.flaticon.com/512/1828/1828479.png"
       (cardClick)="logout()"
-    >
-    </app-profile-card>
+    ></app-profile-card>
   </div>
-  } @switch (currentView) { @case ('orders') {
+  }
+
+  @switch (currentView) {
+
+  <!-- ═══════════════════ ORDERS LIST ═══════════════════ -->
+  @case ('orders') {
   <div class="sub-view-container">
     <div class="view-header">
       <h2>Your Orders</h2>
-      <div class="search-orders">
-        <input type="text" placeholder="Search all orders" />
-        <button class="btn-dark">Search Orders</button>
-      </div>
     </div>
 
     <div class="orders-nav">
       <a class="active">Orders</a>
-      <a>Buy Again</a>
-      <a>Not Yet Shipped</a>
-      <a>Cancelled Orders</a>
     </div>
 
     <div class="orders-content">
-      @if (orders.length === 0) {
+      @if (isLoadingOrders) {
+      <div class="loading-orders">Loading your orders...</div>
+      } @else if (orderError) {
+      <div class="error-msg">{{ orderError }}</div>
+      } @else if (orders.length === 0) {
       <div class="empty-state">
         <p>You have no past orders.</p>
-        <button class="btn-primary" routerLink="/products">
-          Start Shopping
-        </button>
+        <button class="btn-primary" routerLink="/products">Start Shopping</button>
       </div>
       } @else {
-      <div class="order-card" *ngFor="let order of orders"></div>
+      <div *ngFor="let order of orders" class="order-card">
+        <div class="order-card-header">
+          <div class="order-meta">
+            <div class="meta-block">
+              <span class="meta-label">ORDER PLACED</span>
+              <span class="meta-val">{{ order.createdAt | date: 'dd MMM yyyy' }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">TOTAL</span>
+              <span class="meta-val">{{ formatCurrency(order.totalAmount) }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">ORDER #</span>
+              <span class="meta-val mono">{{ order.orderNumber || order.id }}</span>
+            </div>
+          </div>
+          <button class="btn-detail" (click)="viewOrderDetail(order)">View order details</button>
+        </div>
+        <div class="order-card-body">
+          <div class="order-items-preview">
+            <div *ngFor="let item of order.items.slice(0,3)" class="preview-item">
+              <img [src]="getItemImage(item)" [alt]="getItemName(item)" class="preview-img" />
+            </div>
+            @if (order.items.length > 3) {
+            <div class="preview-more">+{{ order.items.length - 3 }}</div>
+            }
+          </div>
+          <div class="order-status-block">
+            <span
+              class="status-pill"
+              [class.status-delivered]="order.status === 'delivered'"
+              [class.status-cancelled]="order.status === 'cancelled'"
+              [class.status-shipped]="order.status === 'shipped' || order.status === 'out_for_delivery'"
+            >
+              {{ order.status | titlecase }}
+            </span>
+            @if (order.status === 'delivered') {
+            <p class="status-note">Delivered {{ order.updatedAt | date: 'dd MMM yyyy' }}</p>
+            } @else if (order.status === 'shipped' || order.status === 'out_for_delivery') {
+            <p class="status-note">On the way</p>
+            } @else if (order.status === 'cancelled') {
+            <p class="status-note">This order was cancelled.</p>
+            }
+          </div>
+        </div>
+      </div>
       }
     </div>
   </div>
-  } @case ('addresses') {
+  }
+
+  <!-- ═══════════════════ ORDER DETAIL ═══════════════════ -->
+  @case ('order-detail') {
+  <div class="sub-view-container">
+    @if (!selectedOrder) {
+    <div class="loading-orders">Loading order details...</div>
+    } @else {
+
+    <!-- Header row -->
+    <div class="detail-header">
+      <div>
+        <h2 class="detail-title">Order Details</h2>
+        <span class="detail-order-num">Order #{{ selectedOrder.orderNumber || selectedOrder.id }}</span>
+        <span class="detail-order-date"> &mdash; Placed on {{ selectedOrder.createdAt | date: 'dd MMM yyyy, h:mm a' }}</span>
+      </div>
+      <div class="detail-action-buttons">
+        <button
+          class="btn-cancel-order"
+          [disabled]="!canCancel(selectedOrder) || isCancellingOrder"
+          (click)="cancelOrder()"
+        >
+          {{ isCancellingOrder ? 'Cancelling...' : 'Cancel Order' }}
+        </button>
+        <button
+          class="btn-refund-order"
+          *ngIf="canRefund(selectedOrder) && selectedOrder?.paymentStatus !== 'refunded'"
+          [disabled]="isRefunding"
+          (click)="requestRefund()"
+        >
+          {{ isRefunding ? 'Processing...' : 'Request Refund' }}
+        </button>
+      </div>
+    </div>
+    <p class="cancel-error" *ngIf="cancelError">{{ cancelError }}</p>
+    <p class="refund-message" *ngIf="refundMessage" [class.refund-success]="refundMessage.includes('success')">{{ refundMessage }}</p>
+
+    <!-- Order Status Stepper -->
+    @if (selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'returned' && selectedOrder.status !== 'refunded') {
+    <div class="stepper-section">
+      <div class="stepper">
+        <ng-container *ngFor="let step of orderSteps; let i = index">
+          <div
+            class="step"
+            [class.step-complete]="isStepComplete(step, selectedOrder.status)"
+            [class.step-active]="isStepActive(step, selectedOrder.status)"
+          >
+            <div class="step-dot">
+              <span *ngIf="isStepComplete(step, selectedOrder.status) && !isStepActive(step, selectedOrder.status)">✓</span>
+            </div>
+            <div class="step-label">{{ step.replace('_',' ') | titlecase }}</div>
+          </div>
+          <div *ngIf="i < orderSteps.length - 1"
+            class="step-connector"
+            [class.connector-filled]="isStepComplete(orderSteps[i + 1], selectedOrder.status)"
+          ></div>
+        </ng-container>
+      </div>
+    </div>
+    } @else {
+    <div class="cancelled-banner">
+      <span class="cancelled-icon">✕</span>
+      <div>
+        <strong>Order {{ selectedOrder.status | titlecase }}</strong>
+        <p>{{ selectedOrder.status === 'cancelled' ? 'This order has been cancelled.' : 'Return / refund is in progress.' }}</p>
+      </div>
+    </div>
+    }
+
+    <!-- Shipment Tracking Bar -->
+    @if (selectedOrder.shipmentTracking?.trackingNumber) {
+    <div class="tracking-section">
+      <h3 class="section-title">Shipment Tracking</h3>
+      <div class="tracking-bar">
+        <div class="track-step" [class.track-done]="getStepIndex(selectedOrder.status) >= 0">
+          <div class="track-dot"></div>
+          <div class="track-line"></div>
+          <span class="track-label">Ordered</span>
+        </div>
+        <div class="track-step"
+          [class.track-done]="selectedOrder.status === 'shipped' || selectedOrder.status === 'out_for_delivery' || selectedOrder.status === 'delivered'">
+          <div class="track-dot"></div>
+          <div class="track-line"></div>
+          <span class="track-label">Shipped</span>
+        </div>
+        <div class="track-step"
+          [class.track-done]="selectedOrder.status === 'out_for_delivery' || selectedOrder.status === 'delivered'">
+          <div class="track-dot"></div>
+          <div class="track-line"></div>
+          <span class="track-label">Out for Delivery</span>
+        </div>
+        <div class="track-step" [class.track-done]="selectedOrder.status === 'delivered'">
+          <div class="track-dot"></div>
+          <span class="track-label">Delivered</span>
+        </div>
+      </div>
+      <div class="tracking-meta">
+        <span *ngIf="selectedOrder.shipmentTracking?.carrier">Carrier: <strong>{{ selectedOrder.shipmentTracking!.carrier }}</strong></span>
+        <span *ngIf="selectedOrder.shipmentTracking?.trackingNumber">Tracking #: <strong class="mono">{{ selectedOrder.shipmentTracking!.trackingNumber }}</strong></span>
+        <span *ngIf="selectedOrder.shipmentTracking?.estimatedDelivery">Est. Delivery: <strong>{{ selectedOrder.shipmentTracking!.estimatedDelivery | date: 'dd MMM yyyy' }}</strong></span>
+      </div>
+    </div>
+    }
+
+    <!-- Order Items -->
+    <div class="detail-section">
+      <h3 class="section-title">Items in this order</h3>
+      <div class="detail-items">
+        <div *ngFor="let item of selectedOrder.items" class="detail-item-row">
+          <img [src]="getItemImage(item)" [alt]="getItemName(item)" class="detail-item-img" />
+          <div class="detail-item-info">
+            <p class="detail-item-name">{{ getItemName(item) }}</p>
+            <p class="detail-item-meta">Qty: {{ item.quantity }} &bull; {{ formatCurrency(item.price) }} each</p>
+          </div>
+          <div class="detail-item-total">{{ formatCurrency(item.price * item.quantity) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price Breakdown -->
+    <div class="detail-section detail-two-col">
+      <div>
+        <h3 class="section-title">Order Summary</h3>
+        <div class="price-breakdown">
+          <div class="pb-row"><span>Subtotal</span><span>{{ formatCurrency(selectedOrder.subtotal ?? selectedOrder.totalAmount) }}</span></div>
+          @if (selectedOrder.discount && selectedOrder.discount > 0) {
+          <div class="pb-row discount-row"><span>Discount</span><span>- {{ formatCurrency(selectedOrder.discount) }}</span></div>
+          }
+          @if (selectedOrder.deliveryCharge !== undefined) {
+          <div class="pb-row"><span>Delivery</span><span>{{ selectedOrder.deliveryCharge === 0 ? 'FREE' : formatCurrency(selectedOrder.deliveryCharge) }}</span></div>
+          }
+          @if (selectedOrder.tax && selectedOrder.tax > 0) {
+          <div class="pb-row"><span>Tax</span><span>{{ formatCurrency(selectedOrder.tax) }}</span></div>
+          }
+          <div class="pb-row pb-total"><span>Total</span><span>{{ formatCurrency(selectedOrder.totalAmount) }}</span></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="section-title">Shipping Address</h3>
+        <div class="shipping-box">
+          <p *ngIf="selectedOrder.shippingAddress?.fullName"><strong>{{ selectedOrder.shippingAddress.fullName }}</strong></p>
+          <p>{{ selectedOrder.shippingAddress?.street }}</p>
+          <p>{{ selectedOrder.shippingAddress?.city }}, {{ selectedOrder.shippingAddress?.state }} {{ selectedOrder.shippingAddress?.zipCode }}</p>
+          <p>{{ selectedOrder.shippingAddress?.country }}</p>
+          <p *ngIf="selectedOrder.shippingAddress?.phone">Phone: {{ selectedOrder.shippingAddress.phone }}</p>
+        </div>
+        <div class="payment-badge">
+          <span>Payment: </span>
+          <span class="pay-method">{{ selectedOrder.paymentMethod | titlecase }}</span>
+          <span
+            class="pay-status"
+            [class.pay-done]="selectedOrder.paymentStatus === 'completed'"
+          >&nbsp;&bull; {{ selectedOrder.paymentStatus | titlecase }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    @if (selectedOrder.timeline && selectedOrder.timeline.length > 0) {
+    <div class="detail-section">
+      <h3 class="section-title">Order Timeline</h3>
+      <div class="timeline">
+        <div *ngFor="let event of selectedOrder.timeline" class="timeline-event">
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <span class="tl-status">{{ event.status.replace('_',' ') | titlecase }}</span>
+            <span class="tl-desc">{{ event.description }}</span>
+            <span class="tl-time">{{ event.timestamp | date: 'dd MMM yyyy, h:mm a' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    }
+  </div>
+  }
+
+  <!-- ═══════════════════ ADDRESSES ═══════════════════ -->
+  @case ('addresses') {
   <div class="sub-view-container">
     <h2>Your Addresses</h2>
-
     <div class="address-grid">
       <div class="address-card add-new" (click)="toggleAddressForm()">
         <div class="plus-icon">+</div>
         <h3>Add Address</h3>
       </div>
-
       @for (addr of addresses; track addr.id) {
       <div class="address-card">
-        @if (addr.isDefault) {
-        <div class="default-badge">Default</div>
-        }
+        @if (addr.isDefault) {<div class="default-badge">Default</div>}
         <h3>{{ addr.fullName }}</h3>
         <p>{{ addr.street }}</p>
         <p>{{ addr.city }}, {{ addr.state }} {{ addr.zip }}</p>
@@ -113,141 +331,96 @@
         <div class="address-actions">
           <a (click)="deleteAddress(addr.id)">Remove</a>
           <span class="sep">|</span>
-          <a *ngIf="!addr.isDefault" (click)="setDefaultAddress(addr.id)"
-            >Set as Default</a
-          >
+          <a *ngIf="!addr.isDefault" (click)="setDefaultAddress(addr.id)">Set as Default</a>
         </div>
       </div>
       }
     </div>
-
     @if (showAddressForm) {
     <div class="address-form-modal">
       <h3>Add a new address</h3>
       <form [formGroup]="addressForm" (ngSubmit)="saveAddress()">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input formControlName="fullName" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label>Address Line</label>
-          <input formControlName="street" class="form-control" />
+        <div class="form-group"><label>Full Name</label><input formControlName="fullName" class="form-control" /></div>
+        <div class="form-group"><label>Address Line</label><input formControlName="street" class="form-control" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>City</label><input formControlName="city" class="form-control" /></div>
+          <div class="form-group"><label>State</label><input formControlName="state" class="form-control" /></div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>City</label>
-            <input formControlName="city" class="form-control" />
-          </div>
-          <div class="form-group">
-            <label>State</label>
-            <input formControlName="state" class="form-control" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Zip Code</label>
-            <input formControlName="zip" class="form-control" />
-          </div>
-          <div class="form-group">
-            <label>Phone</label>
-            <input formControlName="phone" class="form-control" />
-          </div>
+          <div class="form-group"><label>Zip Code</label><input formControlName="zip" class="form-control" /></div>
+          <div class="form-group"><label>Phone</label><input formControlName="phone" class="form-control" /></div>
         </div>
         <div class="form-group check">
           <input type="checkbox" formControlName="isDefault" id="def" />
           <label for="def">Make this my default address</label>
         </div>
         <div class="form-actions">
-          <button
-            type="button"
-            class="btn-secondary"
-            (click)="toggleAddressForm()"
-          >
-            Cancel
-          </button>
+          <button type="button" class="btn-secondary" (click)="toggleAddressForm()">Cancel</button>
           <button type="submit" class="btn-primary">Add Address</button>
         </div>
       </form>
     </div>
     }
   </div>
-  } @case ('security') {
+  }
+
+  <!-- ═══════════════════ SECURITY ═══════════════════ -->
+  @case ('security') {
   <div class="sub-view-container narrow">
     <h2>Login & Security</h2>
-
     <div class="security-box">
       <div class="sec-row">
-        <div class="sec-info">
-          <span class="label">Name:</span>
-          <span class="val">{{ user?.name }}</span>
-        </div>
+        <div class="sec-info"><span class="label">Name:</span><span class="val">{{ user?.name }}</span></div>
         <button class="btn-edit">Edit</button>
       </div>
       <div class="sec-row">
-        <div class="sec-info">
-          <span class="label">Email:</span>
-          <span class="val">{{ user?.email }}</span>
-        </div>
+        <div class="sec-info"><span class="label">Email:</span><span class="val">{{ user?.email }}</span></div>
         <button class="btn-edit">Edit</button>
       </div>
       <div class="sec-row">
-        <div class="sec-info">
-          <span class="label">Password:</span>
-          <span class="val">********</span>
-        </div>
-        <button class="btn-edit" (click)="showAddressForm = !showAddressForm">
-          Edit
-        </button>
+        <div class="sec-info"><span class="label">Password:</span><span class="val">********</span></div>
+        <button class="btn-edit" (click)="showAddressForm = !showAddressForm">Edit</button>
       </div>
     </div>
-
     @if (showAddressForm) {
     <div class="password-change-box">
       <h3>Change Password</h3>
       <p class="success-msg" *ngIf="securityMessage">{{ securityMessage }}</p>
       <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
         <label>Current Password</label>
-        <input
-          type="password"
-          formControlName="currentPassword"
-          class="form-control"
-        />
-
+        <input type="password" formControlName="currentPassword" class="form-control" />
         <label>New Password</label>
-        <input
-          type="password"
-          formControlName="newPassword"
-          class="form-control"
-        />
-
+        <input type="password" formControlName="newPassword" class="form-control" />
         <label>Re-enter New Password</label>
-        <input
-          type="password"
-          formControlName="confirmPassword"
-          class="form-control"
-        />
-
+        <input type="password" formControlName="confirmPassword" class="form-control" />
         <button type="submit" class="btn-primary mt-2">Save Changes</button>
       </form>
     </div>
     }
   </div>
-  } @case ('wallet') {
+  }
+
+  <!-- ═══════════════════ WALLET ═══════════════════ -->
+  @case ('wallet') {
   <div class="sub-view-container narrow">
     <h2>Bazaar Pay</h2>
     <div class="wallet-card">
       <h3>Wallet Balance</h3>
-      <div class="balance">₹{{ walletBalance | number : "1.2-2" }}</div>
+      <div class="balance">₹{{ walletBalance | number: '1.2-2' }}</div>
       <button class="btn-primary">Add Money</button>
     </div>
   </div>
-  } @case ('contact') {
+  }
+
+  <!-- ═══════════════════ CONTACT ═══════════════════ -->
+  @case ('contact') {
   <div class="sub-view-container narrow">
     <h2>Contact Customer Service</h2>
     <p>Need help with recent orders?</p>
-    <button class="btn-primary">Chat with Us</button>
-    <br /><br />
+    <button class="btn-primary">Chat with Us</button><br /><br />
     <button class="btn-secondary">Request a Call</button>
   </div>
-  } }
+  }
+
+  }
 </section>

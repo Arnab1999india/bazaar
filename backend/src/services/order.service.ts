@@ -1,12 +1,14 @@
 import { Order } from "../models/Order";
 import { Cart } from "../models/Cart";
 import { Product } from "../models/Product";
+import { User } from "../models/User";
 import {
   IOrderInput,
   IOrderQuery,
   OrderStatus,
 } from "../interfaces/order.interface";
 import { AppError, ErrorType } from "../interfaces/error.interface";
+import { EmailService } from "./email.service";
 
 export class OrderService {
   static async createOrder(
@@ -116,7 +118,24 @@ export class OrderService {
         { path: "items.product", select: "name price imageUrl" },
       ]);
 
-      return order.toJSON();
+      const orderJson = order.toJSON();
+
+      // Send confirmation email (non-blocking)
+      User.findById(userId).then((user) => {
+        if (user?.email) {
+          EmailService.sendOrderConfirmationEmail(user.email, {
+            orderNumber: orderJson.orderNumber,
+            totalAmount: orderJson.totalAmount,
+            items: (orderJson.items || []).map((i: any) => ({
+              name: i.name || (i.product as any)?.name || 'Product',
+              quantity: i.quantity,
+              price: i.price,
+            })),
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+
+      return orderJson;
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError(ErrorType.INTERNAL, "Error creating order", 500);

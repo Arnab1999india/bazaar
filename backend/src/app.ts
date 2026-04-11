@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -7,6 +8,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/config";
 import rateLimit from "express-rate-limit";
 import { OTPService } from "./services/otp.service";
+import { notificationService } from "./services/notification.service";
 
 const envPathFromRoot = path.resolve(process.cwd(), ".env");
 const envPathFromBackend = path.resolve(process.cwd(), "backend", ".env");
@@ -17,7 +19,11 @@ const resolvedEnvPath = process.env.DOTENV_PATH
     : envPathFromBackend;
 dotenv.config({ path: resolvedEnvPath });
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Initialize Socket.io for real-time notifications
+notificationService.init(httpServer);
 
 // Middleware
 app.set("trust proxy", 1);
@@ -56,6 +62,11 @@ import sellerOrderRoutes from "./routes/seller-order.routes";
 import paymentRoutes from "./routes/payment.routes";
 import adminRoutes from "./routes/admin.routes";
 import sellerStatsRoutes from "./routes/seller-stats.routes";
+import wishlistRoutes from "./routes/wishlist.routes";
+import webhookRoutes from "./routes/webhook.routes";
+
+// Webhooks (must be registered before express.json() parses body)
+app.use("/api/webhooks", webhookRoutes);
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -71,6 +82,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/seller/orders", sellerOrderRoutes);
 app.use("/api/seller", sellerStatsRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api", catalogRoutes);
 
 // Cleanup expired OTPs every hour
@@ -86,7 +98,7 @@ setInterval(
   60 * 60 * 1000,
 ); // 1 hour
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 

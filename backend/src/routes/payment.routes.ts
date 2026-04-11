@@ -16,4 +16,7 @@ router.post("/verify", PaymentController.verifyPayment);
 // Get payment by order ID
 router.get("/order/:orderId", PaymentController.getPaymentByOrderId);
 
+// Refund payment
+router.post("/refund", PaymentController.refundPayment);
+
 export default router;

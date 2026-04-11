@@ -16,7 +16,9 @@ import dotenv from "dotenv";
 
 const envPathFromRoot = path.resolve(process.cwd(), ".env");
 const envPathFromBackend = path.resolve(process.cwd(), "backend", ".env");
-const resolvedEnvPath = fs.existsSync(envPathFromRoot) ? envPathFromRoot : envPathFromBackend;
+const resolvedEnvPath = fs.existsSync(envPathFromRoot)
+  ? envPathFromRoot
+  : envPathFromBackend;
 dotenv.config({ path: resolvedEnvPath });
 
 import mongoose from "mongoose";

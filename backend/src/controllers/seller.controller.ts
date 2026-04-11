@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { SellerService } from "../services/seller.service";
+import { EmailService } from "../services/email.service";
+import { User } from "../models/User";
 
 export class SellerController {
   static async getMyProfile(req: Request, res: Response): Promise<void> {
@@ -89,6 +91,12 @@ export class SellerController {
   static async approveSeller(req: Request, res: Response): Promise<void> {
     try {
       const profile = await SellerService.approveSeller(req.params.sellerId);
+      // Send approval email (non-blocking)
+      User.findById(req.params.sellerId).then((user) => {
+        if (user?.email) {
+          EmailService.sendSellerApprovalEmail(user.email, (profile as any).businessName || user.name).catch(() => {});
+        }
+      }).catch(() => {});
       res.json({ success: true, data: profile });
     } catch (error: any) {
       if (error.message === "Seller profile not found") {

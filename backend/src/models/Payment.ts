@@ -31,7 +31,7 @@ const paymentSchema = new Schema<IPaymentDocument>(
     },
     status: {
       type: String,
-      enum: ["created", "authorized", "captured", "failed"],
+      enum: ["created", "authorized", "captured", "failed", "refunded"],
       default: "created",
     },
     razorpayPaymentId: String,

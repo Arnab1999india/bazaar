@@ -17,7 +17,6 @@ export const auth: RequestHandler = async (
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
-    console.log("🔍 Incoming Auth Header:", `"${token}"`);
     if (!token) {
       throw new AppError(
         ErrorType.AUTHENTICATION,
@@ -36,7 +35,6 @@ export const auth: RequestHandler = async (
     req.user = user;
     next();
   } catch (error: any) {
-    console.error("JWT Verification Error:", error.message);
     next(
       new AppError(
         ErrorType.AUTHENTICATION,

@@ -1,16 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Product } from '../../../core/models/api.models';
+import { ReviewService } from '../../../core/services/review.service';
+import { Product, Review } from '../../../core/models/api.models';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
 })
@@ -29,14 +31,32 @@ export class ProductDetailComponent implements OnInit {
     'Compatible with a wide range of devices and accessories.',
   ];
 
+  // Reviews
+  reviews: Review[] = [];
+  isLoadingReviews = false;
+  showReviewForm = false;
+  reviewForm: FormGroup;
+  isSubmittingReview = false;
+  reviewError = '';
+  reviewSuccess = '';
+  hoverRating = 0;      // tracks hover for star rendering
+  editingReviewId: string | null = null;   // null = create, string = edit
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private catalogService: CatalogService,
     private cartService: CartService,
     private authService: AuthService,
+    private reviewService: ReviewService,
     private toastService: ToastService,
-  ) {}
+    private fb: FormBuilder,
+  ) {
+    this.reviewForm = this.fb.group({
+      rating: [0, [Validators.required, Validators.min(1), Validators.max(5)]],
+      comment: ['', [Validators.required, Validators.minLength(5)]],
+    });
+  }
 
   ngOnInit(): void {
     // Calculate a fake delivery date (Tomorrow)
@@ -53,6 +73,8 @@ export class ProductDetailComponent implements OnInit {
       this.router.navigate(['/products']);
       return;
     }
+
+    this.loadReviews(productId);
 
     this.catalogService.getProduct(productId).subscribe({
       next: (res) => {
@@ -138,5 +160,127 @@ export class ProductDetailComponent implements OnInit {
       return product.totalStock <= 0;
     }
     return product.stockStatus === 'out-of-stock';
+  }
+
+  // ── Reviews ───────────────────────────────────────────
+  loadReviews(productId: string): void {
+    this.isLoadingReviews = true;
+    this.reviewService.getReviewsByProduct(productId).subscribe({
+      next: (res) => {
+        this.reviews = res.data ?? [];
+        this.isLoadingReviews = false;
+      },
+      error: () => { this.isLoadingReviews = false; },
+    });
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  get currentUserId(): string | undefined {
+    return this.authService.getCurrentUser()?.id;
+  }
+
+  getReviewUserId(review: Review): string {
+    if (typeof review.user === 'object') return review.user.id;
+    return review.user;
+  }
+
+  getReviewUserName(review: Review): string {
+    if (typeof review.user === 'object') return review.user.name;
+    return 'User';
+  }
+
+  isOwnReview(review: Review): boolean {
+    return !!this.currentUserId && this.getReviewUserId(review) === this.currentUserId;
+  }
+
+  openReviewForm(): void {
+    this.showReviewForm = true;
+    this.editingReviewId = null;
+    this.reviewError = '';
+    this.reviewSuccess = '';
+    this.reviewForm.reset({ rating: 0, comment: '' });
+  }
+
+  openEditForm(review: Review): void {
+    this.showReviewForm = true;
+    this.editingReviewId = review.id;
+    this.reviewError = '';
+    this.reviewSuccess = '';
+    this.reviewForm.setValue({ rating: review.rating, comment: review.comment });
+  }
+
+  closeReviewForm(): void {
+    this.showReviewForm = false;
+    this.editingReviewId = null;
+    this.reviewError = '';
+  }
+
+  setRating(value: number): void {
+    this.reviewForm.patchValue({ rating: value });
+  }
+
+  starClass(starIndex: number): string {
+    const current = this.hoverRating || this.reviewForm.value.rating || 0;
+    return starIndex <= current ? 'star filled' : 'star';
+  }
+
+  submitReview(): void {
+    if (this.reviewForm.invalid || !this.product) return;
+    this.isSubmittingReview = true;
+    this.reviewError = '';
+
+    const { rating, comment } = this.reviewForm.value;
+
+    if (this.editingReviewId) {
+      this.reviewService.updateReview(this.editingReviewId, { rating, comment }).subscribe({
+        next: (res) => {
+          const idx = this.reviews.findIndex(r => r.id === this.editingReviewId);
+          if (idx > -1) this.reviews[idx] = res.data;
+          this.reviewSuccess = 'Review updated.';
+          this.isSubmittingReview = false;
+          this.closeReviewForm();
+        },
+        error: (err) => {
+          this.reviewError = err?.error?.message || 'Failed to update review.';
+          this.isSubmittingReview = false;
+        },
+      });
+    } else {
+      const productId = this.product.id || (this.product as any)._id;
+      this.reviewService.createReview({ productId, rating, comment }).subscribe({
+        next: (res) => {
+          this.reviews.unshift(res.data);
+          this.reviewSuccess = 'Review submitted!';
+          this.isSubmittingReview = false;
+          this.closeReviewForm();
+        },
+        error: (err) => {
+          this.reviewError = err?.error?.message || 'Failed to submit review.';
+          this.isSubmittingReview = false;
+        },
+      });
+    }
+  }
+
+  deleteReview(review: Review): void {
+    if (!confirm('Delete this review?')) return;
+    this.reviewService.deleteReview(review.id).subscribe({
+      next: () => {
+        this.reviews = this.reviews.filter(r => r.id !== review.id);
+      },
+      error: () => { this.toastService.error('Failed to delete review.'); },
+    });
+  }
+
+  avgRating(): number {
+    if (!this.reviews.length) return 0;
+    return this.reviews.reduce((s, r) => s + r.rating, 0) / this.reviews.length;
+  }
+
+  starsArray(rating: number): number[] {
+    return Array.from({ length: 5 }, (_, i) => i + 1);
   }
 }

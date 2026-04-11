@@ -120,4 +120,45 @@ export class PaymentService {
       throw new AppError(ErrorType.INTERNAL, "Failed to fetch payment", 500);
     }
   }
+
+  static async refundPayment(orderId: string, userId: string) {
+    try {
+      const payment = await Payment.findOne({ orderId, userId });
+      if (!payment) {
+        throw new AppError(ErrorType.NOT_FOUND, "Payment not found", 404);
+      }
+      if (payment.status !== "captured") {
+        throw new AppError(
+          ErrorType.VALIDATION,
+          "Only captured payments can be refunded",
+          400
+        );
+      }
+      if (!payment.razorpayPaymentId) {
+        throw new AppError(
+          ErrorType.VALIDATION,
+          "No Razorpay payment ID found for refund",
+          400
+        );
+      }
+
+      const refund = await razorpayInstance.payments.refund(
+        payment.razorpayPaymentId,
+        { amount: payment.amount * 100 }
+      );
+
+      payment.status = "refunded";
+      await payment.save();
+
+      await Order.findByIdAndUpdate(orderId, {
+        paymentStatus: "refunded",
+        status: "cancelled",
+      });
+
+      return { refundId: (refund as any).id, status: "refunded" };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(ErrorType.INTERNAL, "Failed to process refund", 500);
+    }
+  }
 }

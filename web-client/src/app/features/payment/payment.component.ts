@@ -5,12 +5,14 @@ import { Router } from '@angular/router';
 import { CheckoutService } from '../../core/services/checkout.service';
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
+import { OrderService } from '../../core/services/order.service';
 import {
   PaymentService,
   RazorpayOptions,
 } from '../../core/services/payment.service';
 import { CheckoutState } from '../../core/models/checkout.models';
 import { OrderTotals } from '../../core/models/cart.models';
+import { OrderCreatePayload } from '../../core/models/api.models';
 
 @Component({
   selector: 'app-payment',
@@ -30,6 +32,7 @@ export class PaymentComponent implements OnInit {
     private checkoutService: CheckoutService,
     private cartService: CartService,
     private paymentService: PaymentService,
+    private orderService: OrderService,
     private authService: AuthService,
     private router: Router,
     private fb: FormBuilder,
@@ -130,12 +133,38 @@ export class PaymentComponent implements OnInit {
     }
   }
 
-  private async createOrder(): Promise<any> {
-    // TODO: Implement this - call your order creation endpoint
-    // For now, returning a mock
-    return {
-      id: 'order_' + Date.now(),
+  private createOrder(): Promise<{ id: string }> {
+    if (!this.checkoutState) {
+      return Promise.reject(new Error('No checkout state'));
+    }
+
+    const address = this.checkoutState.address!;
+    const items = this.checkoutState.items.map((item) => ({
+      productId: item.product.id || (item.product as any)._id || '',
+      quantity: item.quantity,
+    }));
+
+    const payload: OrderCreatePayload = {
+      items,
+      shippingAddress: {
+        street:
+          address.line1 + (address.line2 ? ', ' + address.line2 : ''),
+        city: address.city,
+        state: address.state,
+        country: 'India',
+        zipCode: address.postalCode,
+      },
+      paymentMethod: this.checkoutState.paymentMethod || 'razorpay',
+      paymentProvider: 'razorpay',
     };
+
+    return this.orderService
+      .createOrder(payload)
+      .toPromise()
+      .then((res) => {
+        const order = res!.data;
+        return { id: order.id || (order as any)._id };
+      });
   }
 
   private handlePaymentSuccess(response: any): void {

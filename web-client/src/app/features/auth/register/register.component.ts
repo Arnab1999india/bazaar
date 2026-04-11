@@ -105,12 +105,7 @@ export class RegisterComponent {
       next: (res) => {
         this.isSubmitting = false;
 
-        // ✅ FIX: Persist the session with token and user data
-        this.authService.persistSessionFromToken(
-          res.data.user,
-          res.data.tokens.accessToken,
-          true, // Remember user
-        );
+        this.authService.persistSessionFromResponse(res.data, true);
 
         // ✅ FIX: Redirect to dashboard/home based on role
         const user = res.data.user;

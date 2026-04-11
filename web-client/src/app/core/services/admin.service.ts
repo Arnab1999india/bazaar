@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL, API_ENDPOINTS } from '../constants/api.constants';
-import { ApiResponse, AdminStats, AdminUser, Order } from '../models/api.models';
+import { ApiResponse, AdminStats, AdminUser, Category, Order } from '../models/api.models';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -45,6 +45,45 @@ export class AdminService {
     return this.http.post<ApiResponse<AdminUser>>(
       `${API_BASE_URL}${API_ENDPOINTS.admin.createAdmin}`,
       payload,
+      { headers: this.authService.authHeaders }
+    );
+  }
+
+  updateOrderStatus(orderId: string, status: string): Observable<ApiResponse<Order>> {
+    return this.http.put<ApiResponse<Order>>(
+      `${API_BASE_URL}${API_ENDPOINTS.orders.adminUpdateStatus(orderId)}`,
+      { status },
+      { headers: this.authService.authHeaders }
+    );
+  }
+
+  // ── Category management ──────────────────────────────────
+  listCategories(): Observable<ApiResponse<Category[]>> {
+    return this.http.get<ApiResponse<Category[]>>(
+      `${API_BASE_URL}${API_ENDPOINTS.admin.categories}`,
+      { headers: this.authService.authHeaders }
+    );
+  }
+
+  createCategory(payload: { name: string; slug?: string; parentId?: string | null }): Observable<ApiResponse<Category>> {
+    return this.http.post<ApiResponse<Category>>(
+      `${API_BASE_URL}${API_ENDPOINTS.admin.categories}`,
+      payload,
+      { headers: this.authService.authHeaders }
+    );
+  }
+
+  updateCategory(id: string, payload: { name: string; slug?: string; parentId?: string | null }): Observable<ApiResponse<Category>> {
+    return this.http.put<ApiResponse<Category>>(
+      `${API_BASE_URL}${API_ENDPOINTS.admin.categoryById(id)}`,
+      payload,
+      { headers: this.authService.authHeaders }
+    );
+  }
+
+  deleteCategory(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(
+      `${API_BASE_URL}${API_ENDPOINTS.admin.categoryById(id)}`,
       { headers: this.authService.authHeaders }
     );
   }

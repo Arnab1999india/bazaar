@@ -5,7 +5,7 @@ export interface IPaymentOrder {
   currency: string;
   orderId: string; // Reference to main order
   userId: string;
-  status: "created" | "authorized" | "captured" | "failed";
+  status: "created" | "authorized" | "captured" | "failed" | "refunded";
   razorpayPaymentId?: string;
   razorpaySignature?: string;
   createdAt: Date;

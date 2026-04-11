@@ -56,11 +56,10 @@ router.post(
   AuthController.resendOTP,
 );
 
-// OAuth routes
-router.get("/google", (req, res) => {
-  // Implement Google OAuth initialization
-});
+// Google OAuth (token-based via Google Identity Services)
+router.post("/google/token", AuthController.googleTokenLogin);
 
+// Legacy Passport-based OAuth (not used by frontend)
 router.get("/google/callback", AuthController.googleCallback);
 
 // Protected routes (require authentication)

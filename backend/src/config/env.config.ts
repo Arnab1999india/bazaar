@@ -31,6 +31,7 @@ interface IEnvConfig {
   CLIENT_URL: string;
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
+  RAZORPAY_WEBHOOK_SECRET?: string;
 }
 
 const getConfig = (): IEnvConfig => {
@@ -52,6 +53,7 @@ const getConfig = (): IEnvConfig => {
     CLIENT_URL: process.env.CLIENT_URL,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
+    RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
   };
 
   // Validate required environment variables
@@ -91,6 +93,7 @@ const getConfig = (): IEnvConfig => {
     CLIENT_URL: (config.CLIENT_URL as string) || "http://localhost:3000",
     RAZORPAY_KEY_ID: config.RAZORPAY_KEY_ID as string | undefined,
     RAZORPAY_KEY_SECRET: config.RAZORPAY_KEY_SECRET as string | undefined,
+    RAZORPAY_WEBHOOK_SECRET: config.RAZORPAY_WEBHOOK_SECRET as string | undefined,
   };
 };
 

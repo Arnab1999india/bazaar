@@ -11,6 +11,15 @@ export interface Pagination {
   total: number;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  count: number;
+  children: Category[];
+}
+
 // Auth
 export interface AuthTokens {
   accessToken: string;
@@ -101,6 +110,7 @@ export interface ProductCreatePayload {
   brand?: string;
   imageUrl: string[];
   stockStatus?: 'in-stock' | 'out-of-stock';
+  totalStock?: number;
   variants?: ProductVariant[];
 }
 
@@ -123,6 +133,18 @@ export interface CartResponse {
 }
 
 // Orders
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'packed'
+  | 'shipped'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancelled'
+  | 'returned'
+  | 'refunded';
+
 export type OrderItemStatus =
   | 'pending'
   | 'processing'
@@ -130,36 +152,81 @@ export type OrderItemStatus =
   | 'delivered'
   | 'cancelled';
 
+export interface OrderTimeline {
+  status: string;
+  timestamp: string;
+  description: string;
+  updatedBy?: string;
+}
+
+export interface ShipmentUpdate {
+  status: string;
+  location?: string;
+  timestamp: string;
+  description?: string;
+}
+
+export interface ShipmentTracking {
+  carrier?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  currentLocation?: string;
+  estimatedDelivery?: string;
+  updates?: ShipmentUpdate[];
+}
+
 export interface OrderItem {
   id: string;
   _id?: string;
-  product: Product;
+  product: Product | { id: string; name: string; imageUrl?: string[]; price?: number };
   sellerId: string;
   quantity: number;
   price: number;
+  name?: string;
+  imageUrl?: string;
   itemStatus: OrderItemStatus;
 }
 
 export interface Order {
   id: string;
   _id?: string;
+  orderNumber?: string;
   items: OrderItem[];
   buyer: { id: string; name: string; email: string } | string;
   totalAmount: number;
-  status: OrderItemStatus;
+  subtotal?: number;
+  discount?: number;
+  deliveryCharge?: number;
+  tax?: number;
+  status: OrderStatus;
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
   shippingAddress: {
+    fullName?: string;
+    phone?: string;
     street: string;
     city: string;
     state: string;
     country: string;
     zipCode: string;
   };
-  paymentStatus: 'pending' | 'completed' | 'failed';
-  paymentMethod: string;
-  paymentProvider?: string;
-  paymentId?: string;
-  paymentSignature?: string;
-  razorpayOrderId?: string;
+  shipmentTracking?: ShipmentTracking;
+  timeline?: OrderTimeline[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Reviews
+export interface Review {
+  id: string;
+  user: { id: string; name: string } | string;
+  product: string;
+  rating: number;
+  comment: string;
   createdAt: string;
   updatedAt: string;
 }

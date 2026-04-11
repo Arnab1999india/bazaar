@@ -1,6 +1,7 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import ms from "ms";
 import bcrypt from "bcrypt";
+import { OAuth2Client } from "google-auth-library";
 import { User } from "../models/User";
 import {
   IUser,
@@ -12,6 +13,8 @@ import { AppError, ErrorType } from "../interfaces/error.interface";
 import { envConfig } from "../config/env.config";
 import { OTPService } from "./otp.service";
 import { IOTPInput, IOTPVerifyInput } from "../interfaces/otp.interface";
+
+const googleClient = new OAuth2Client(envConfig.GOOGLE_CLIENT_ID);
 
 export class AuthService {
   private static generateTokens(userId: string): {
@@ -223,6 +226,46 @@ export class AuthService {
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError(ErrorType.INTERNAL, "Error during login", 500);
+    }
+  }
+
+  static async googleTokenAuth(idToken: string): Promise<{
+    token: { accessToken: string; refreshToken: string };
+    user: IUser;
+  }> {
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: envConfig.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw new AppError(ErrorType.AUTHENTICATION, "Invalid Google token", 401);
+      }
+
+      let user = await User.findOne({ googleId: payload.sub });
+      if (!user) {
+        user = await User.findOne({ email: payload.email });
+        if (user) {
+          user.googleId = payload.sub;
+          if (!user.isVerified) user.isVerified = true;
+          await user.save();
+        } else {
+          user = await User.create({
+            name: payload.name || payload.email.split("@")[0],
+            email: payload.email,
+            googleId: payload.sub,
+            role: UserRole.CUSTOMER,
+            isVerified: true,
+          });
+        }
+      }
+
+      const token = this.generateTokens(user.id);
+      return { token, user: user.toJSON() as IUser };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(ErrorType.AUTHENTICATION, "Google authentication failed", 401);
     }
   }
 

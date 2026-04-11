@@ -94,4 +94,30 @@ export class PaymentController {
       next(error);
     }
   }
+
+  static async refundPayment(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      if (!req.user) {
+        throw new AppError(
+          ErrorType.AUTHENTICATION,
+          "Authentication required",
+          401,
+        );
+      }
+
+      const { orderId } = req.body;
+      if (!orderId) {
+        throw new AppError(ErrorType.VALIDATION, "orderId is required", 400);
+      }
+
+      const result = await PaymentService.refundPayment(orderId, req.user.id);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

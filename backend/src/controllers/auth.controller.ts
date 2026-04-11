@@ -70,6 +70,19 @@ export class AuthController {
     }
   }
 
+  static async googleTokenLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { idToken } = req.body;
+      if (!idToken) {
+        throw new AppError(ErrorType.VALIDATION, "idToken is required", 400);
+      }
+      const result = await AuthService.googleTokenAuth(idToken);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async googleCallback(req: Request, res: Response, next: NextFunction) {
     try {
       const authReq = req as AuthRequest;

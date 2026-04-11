@@ -150,6 +150,10 @@ export interface IOrderInput {
   };
   paymentMethod: string;
   customerNotes?: string;
+  paymentId?: string;
+  paymentProvider?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
 }
 
 export interface IOrderQuery {

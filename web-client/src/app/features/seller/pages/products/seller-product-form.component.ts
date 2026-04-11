@@ -53,6 +53,7 @@ export class SellerProductFormComponent implements OnInit {
       brand: [''],
       tags: [''],
       stockStatus: ['in-stock', [Validators.required]],
+      stockQuantity: [null, [Validators.min(0)]],
       variants: this.fb.array([]),
     });
   }
@@ -78,6 +79,7 @@ export class SellerProductFormComponent implements OnInit {
           brand: product.brand ?? '',
           tags: product.tags?.join(', ') ?? '',
           stockStatus: product.stockStatus ?? 'in-stock',
+          stockQuantity: product.totalStock ?? null,
         });
 
         this.imageList = (product.imageUrl ?? []).map((url) => ({
@@ -234,6 +236,10 @@ export class SellerProductFormComponent implements OnInit {
     this.errorMessage = '';
     const formData = this.form.value;
 
+    const hasVariants = (formData.variants ?? []).some(
+      (v: any) => v?.sku
+    );
+
     const productPayload = {
       name: String(formData.name ?? '').trim(),
       description: String(formData.description ?? '').trim(),
@@ -241,6 +247,10 @@ export class SellerProductFormComponent implements OnInit {
       category: String(formData.category ?? '').trim(),
       brand: String(formData.brand ?? '').trim() || undefined,
       stockStatus: formData.stockStatus,
+      totalStock:
+        !hasVariants && formData.stockQuantity != null
+          ? Number(formData.stockQuantity)
+          : undefined,
       tags: String(formData.tags ?? '')
         .split(',')
         .map((tag: string) => tag.trim())

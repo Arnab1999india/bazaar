@@ -159,4 +159,101 @@
     </div>
   </div>
   }
+
+  <!-- ═══════════════ REVIEWS SECTION ═══════════════ -->
+  @if (product) {
+  <div class="reviews-section">
+    <div class="reviews-header">
+      <div>
+        <h2 class="reviews-title">Customer Reviews</h2>
+        @if (reviews.length > 0) {
+        <div class="avg-rating-row">
+          <span class="avg-stars">
+            <span *ngFor="let s of starsArray(avgRating())" [class]="s <= avgRating() ? 'star filled' : 'star'">★</span>
+          </span>
+          <span class="avg-label">{{ avgRating() | number:'1.1-1' }} out of 5 ({{ reviews.length }} reviews)</span>
+        </div>
+        }
+      </div>
+      @if (isLoggedIn) {
+      <button class="btn-write-review" (click)="openReviewForm()" *ngIf="!showReviewForm">Write a Review</button>
+      } @else {
+      <a class="btn-write-review" routerLink="/auth/login">Sign in to review</a>
+      }
+    </div>
+
+    <p class="review-success" *ngIf="reviewSuccess">{{ reviewSuccess }}</p>
+
+    <!-- Review Form -->
+    @if (showReviewForm) {
+    <div class="review-form-box">
+      <h3>{{ editingReviewId ? 'Edit Your Review' : 'Write a Review' }}</h3>
+
+      <!-- Star Picker -->
+      <div class="star-picker">
+        <label>Your Rating</label>
+        <div class="stars-row">
+          <span
+            *ngFor="let s of [1,2,3,4,5]"
+            [class]="starClass(s)"
+            (mouseover)="hoverRating = s"
+            (mouseleave)="hoverRating = 0"
+            (click)="setRating(s)"
+          >★</span>
+        </div>
+        <span class="rating-hint" *ngIf="reviewForm.value.rating > 0">{{ reviewForm.value.rating }}/5</span>
+        <span class="field-err" *ngIf="reviewForm.get('rating')?.touched && reviewForm.get('rating')?.value < 1">Please select a rating.</span>
+      </div>
+
+      <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+        <div class="review-textarea-group">
+          <label>Your Review</label>
+          <textarea
+            formControlName="comment"
+            class="review-textarea"
+            rows="4"
+            placeholder="Share your experience with this product..."
+          ></textarea>
+          <span class="field-err" *ngIf="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched">
+            Review must be at least 5 characters.
+          </span>
+        </div>
+        <p class="field-err" *ngIf="reviewError">{{ reviewError }}</p>
+        <div class="review-form-actions">
+          <button type="button" class="btn-cancel-review" (click)="closeReviewForm()">Cancel</button>
+          <button type="submit" class="btn-submit-review" [disabled]="isSubmittingReview">
+            {{ isSubmittingReview ? 'Submitting...' : (editingReviewId ? 'Update Review' : 'Submit Review') }}
+          </button>
+        </div>
+      </form>
+    </div>
+    }
+
+    <!-- Reviews List -->
+    @if (isLoadingReviews) {
+    <p class="reviews-loading">Loading reviews...</p>
+    } @else if (reviews.length === 0) {
+    <div class="no-reviews">
+      <p>No reviews yet. Be the first to review this product!</p>
+    </div>
+    } @else {
+    <div class="reviews-list">
+      <div *ngFor="let review of reviews" class="review-card">
+        <div class="review-top">
+          <div class="review-stars">
+            <span *ngFor="let s of starsArray(review.rating)" [class]="s <= review.rating ? 'star filled' : 'star'">★</span>
+          </div>
+          <span class="review-author">{{ getReviewUserName(review) }}</span>
+          <span class="review-date">{{ review.createdAt | date:'dd MMM yyyy' }}</span>
+        </div>
+        <p class="review-comment">{{ review.comment }}</p>
+        <div class="review-actions" *ngIf="isOwnReview(review)">
+          <button class="btn-edit-review" (click)="openEditForm(review)">Edit</button>
+          <button class="btn-delete-review" (click)="deleteReview(review)">Delete</button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
 </div>

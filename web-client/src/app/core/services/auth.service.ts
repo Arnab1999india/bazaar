@@ -144,21 +144,40 @@ export class AuthService {
   }
 
   get authHeaders(): HttpHeaders {
-    const tokens = this.getTokens();
-    const tokenValue =
-      typeof tokens?.accessToken === 'string'
-        ? tokens!.accessToken
-        : ((tokens as any)?.accessToken?.accessToken ?? '');
-
-    console.log('AuthService tokenValue:', tokenValue);
-
-    if (tokenValue) {
-      return new HttpHeaders({
-        Authorization: `Bearer ${tokenValue}`,
-      });
+    const token = this.getAccessToken();
+    if (token) {
+      return new HttpHeaders({ Authorization: `Bearer ${token}` });
     }
-
     return new HttpHeaders();
+  }
+
+  /** Returns the raw access token string, handling legacy nested-object storage. */
+  getAccessToken(): string | null {
+    const tokens = this.getTokens();
+    if (!tokens) return null;
+    // Guard against legacy storage where accessToken was accidentally stored as object
+    if (typeof tokens.accessToken === 'string') return tokens.accessToken;
+    const nested = (tokens as any)?.accessToken?.accessToken;
+    return typeof nested === 'string' ? nested : null;
+  }
+
+  /** Returns the refresh token string from storage, or null if not present. */
+  getRefreshToken(): string | null {
+    const tokens = this.getTokens();
+    if (!tokens) return null;
+    return typeof tokens.refreshToken === 'string' ? tokens.refreshToken : null;
+  }
+
+  /**
+   * Writes updated tokens back to whichever storage (local/session) is
+   * currently holding the session, preserving the user's remember-me choice.
+   */
+  updateTokensInPlace(tokens: AuthTokens): void {
+    if (localStorage.getItem(this.storageKey)) {
+      localStorage.setItem(this.storageKey, JSON.stringify(tokens));
+    } else if (sessionStorage.getItem(this.storageKey)) {
+      sessionStorage.setItem(this.storageKey, JSON.stringify(tokens));
+    }
   }
   getTokens(): AuthTokens | null {
     const stored =
@@ -197,6 +216,27 @@ export class AuthService {
       },
       remember,
     );
+  }
+
+  /**
+   * Normalises the raw response data from registration/OTP endpoints which may
+   * return either { token, refreshToken, user } (flat) or { tokens: { accessToken, refreshToken }, user }
+   * (nested) and persists the full session including both tokens.
+   */
+  persistSessionFromResponse(rawData: any, remember = true): void {
+    if (!rawData?.user) return;
+    let tokens: AuthTokens;
+    if (rawData.tokens?.accessToken) {
+      tokens = rawData.tokens;
+    } else if (rawData.token) {
+      tokens = {
+        accessToken: rawData.token,
+        refreshToken: rawData.refreshToken,
+      };
+    } else {
+      return;
+    }
+    this.persistSession({ user: rawData.user as AuthUser, tokens }, remember);
   }
 
   isAuthenticated(): boolean {

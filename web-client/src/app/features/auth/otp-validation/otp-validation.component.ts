@@ -67,11 +67,7 @@ export class OtpValidationComponent {
       if (this.purpose === 'registration') {
         // ✅ FIX: For registration, persist session and redirect to dashboard
         if (res?.data) {
-          this.authService.persistSessionFromToken(
-            res.data.user,
-            res.data.tokens.accessToken,
-            true,
-          );
+          this.authService.persistSessionFromResponse(res.data, true);
 
           const user = res.data.user;
           if (user.role === 'admin') {

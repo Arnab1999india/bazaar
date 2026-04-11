@@ -36,7 +36,7 @@ export class CheckoutComponent implements OnInit {
   isChangingAddress = false;
 
   // Payment
-  selectedPaymentMethod = 'razorpay'; // Default
+  selectedPaymentMethod = 'card'; // Default
   walletBalance = 55.0; // Mock balance
   useWallet = false;
 
@@ -180,7 +180,7 @@ export class CheckoutComponent implements OnInit {
       this.items,
       this.totals,
       this.defaultAddress,
-      'razorpay'
+      this.selectedPaymentMethod
     );
     this.router.navigate(['/payment']);
   }
