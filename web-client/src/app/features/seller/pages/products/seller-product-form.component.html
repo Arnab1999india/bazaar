@@ -1,26 +1,271 @@
 <section class="product-form">
-  <h2>{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h2>
+  <div class="form-header">
+    <a routerLink="/seller/products" class="back-link">&#8592; Back to Products</a>
+    <h2>{{ isEditMode ? "Edit Product" : "Add Product" }}</h2>
+  </div>
+
+  <p class="error-msg global-error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
   <form [formGroup]="form" (ngSubmit)="save()">
-    <div class="form-group">
-      <label for="name">Product Name</label>
-      <input id="name" formControlName="name" class="form-control" />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="price">Price</label>
-        <input id="price" formControlName="price" type="number" class="form-control" />
+
+    <!-- ===== Image Section ===== -->
+    <div class="form-section">
+      <h3 class="section-title">
+        Product Images
+        <span class="hint">&nbsp;({{ imageList.length }}/{{ MAX_IMAGES }}, min {{ MIN_IMAGES }})</span>
+      </h3>
+
+      <!-- Carousel -->
+      <div class="image-carousel" *ngIf="imageList.length > 0">
+        <button
+          type="button"
+          class="slide-btn"
+          (click)="prevSlide()"
+          [disabled]="currentSlide === 0"
+          aria-label="Previous image"
+        >&#8249;</button>
+
+        <div class="slide-viewport">
+          <div class="slide-track" [style.transform]="slideTranslate">
+            <div
+              class="slide"
+              *ngFor="let img of imageList; let i = index"
+            >
+              <img
+                *ngIf="img.preview"
+                [src]="img.preview"
+                [alt]="'Product image ' + (i + 1)"
+                class="slide-img"
+              />
+              <div class="slide-placeholder" *ngIf="!img.preview">
+                <span>Loading…</span>
+              </div>
+
+              <!-- Uploading overlay -->
+              <div class="slide-overlay" *ngIf="img.uploading">
+                <div class="spinner"></div>
+                <span>Uploading…</span>
+              </div>
+
+              <!-- Error overlay -->
+              <div class="slide-overlay error-overlay" *ngIf="img.error && !img.uploading">
+                <span>{{ img.error }}</span>
+              </div>
+
+              <button
+                type="button"
+                class="remove-img-btn"
+                (click)="removeImage(i)"
+                aria-label="Remove image"
+              >&#x2715;</button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="slide-btn"
+          (click)="nextSlide()"
+          [disabled]="currentSlide === imageList.length - 1"
+          aria-label="Next image"
+        >&#8250;</button>
       </div>
+
+      <!-- Dot indicators -->
+      <div class="slide-dots" *ngIf="imageList.length > 1">
+        <button
+          type="button"
+          class="dot"
+          *ngFor="let img of imageList; let i = index"
+          [class.active]="i === currentSlide"
+          (click)="goToSlide(i)"
+          [attr.aria-label]="'Go to image ' + (i + 1)"
+        ></button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="img-empty" *ngIf="imageList.length === 0">
+        <span class="img-empty-icon">&#128247;</span>
+        <p>No images added yet. Add at least 1 image below.</p>
+      </div>
+
+      <!-- Add controls -->
+      <div class="image-add-controls" *ngIf="imageList.length < MAX_IMAGES">
+        <!-- URL input row -->
+        <div class="url-add-row">
+          <input
+            type="url"
+            class="form-control url-input"
+            [(ngModel)]="urlInput"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Paste image URL (https://…)"
+            (keydown.enter)="addImageFromUrl(); $event.preventDefault()"
+          />
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="addImageFromUrl()"
+            [disabled]="!urlInput.trim()"
+          >Add URL</button>
+        </div>
+
+        <!-- File upload row -->
+        <div class="file-upload-row">
+          <label class="file-upload-label">
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              multiple
+              (change)="onFileSelect($event)"
+              class="file-input-hidden"
+            />
+            <span class="upload-icon">&#128193;</span>
+            Upload from Device
+          </label>
+          <span class="hint-text">JPEG, PNG, WebP &mdash; max 5 MB each</span>
+        </div>
+      </div>
+
+      <p class="img-limit-msg" *ngIf="imageList.length >= MAX_IMAGES">
+        Maximum {{ MAX_IMAGES }} images reached.
+      </p>
+    </div>
+
+    <!-- ===== Product Details ===== -->
+    <div class="form-section">
+      <h3 class="section-title">Product Details</h3>
+
       <div class="form-group">
-        <label for="stock">Stock</label>
-        <input id="stock" formControlName="stock" type="number" class="form-control" />
+        <label for="name">Product Name *</label>
+        <input id="name" formControlName="name" class="form-control" placeholder="Enter product name" />
+        <div class="error-msg" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">
+          Name is required (min 2 characters).
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="price">Price (&#8377;) *</label>
+          <input id="price" formControlName="price" type="number" min="1" class="form-control" />
+          <div class="error-msg" *ngIf="form.get('price')?.touched && form.get('price')?.invalid">
+            Valid price is required.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="stockStatus">Stock Status *</label>
+          <select id="stockStatus" formControlName="stockStatus" class="form-control">
+            <option value="in-stock">In Stock</option>
+            <option value="out-of-stock">Out of Stock</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="variants.length === 0">
+          <label for="stockQuantity">
+            Stock Quantity
+            <span class="hint">(items available)</span>
+          </label>
+          <input
+            id="stockQuantity"
+            formControlName="stockQuantity"
+            type="number"
+            min="0"
+            class="form-control"
+            placeholder="e.g. 50"
+          />
+          <div class="error-msg" *ngIf="form.get('stockQuantity')?.touched && form.get('stockQuantity')?.invalid">
+            Quantity must be 0 or more.
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <input
+            id="category"
+            formControlName="category"
+            class="form-control"
+            placeholder="e.g. Electronics, Clothing"
+          />
+          <div class="error-msg" *ngIf="form.get('category')?.touched && form.get('category')?.invalid">
+            Category is required.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="brand">Brand</label>
+          <input id="brand" formControlName="brand" class="form-control" placeholder="e.g. Nike" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tags <span class="hint">(comma separated)</span></label>
+        <input id="tags" formControlName="tags" class="form-control" placeholder="new, sale, cotton" />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-control"
+          rows="4"
+          placeholder="Describe your product…"
+        ></textarea>
+        <div class="error-msg" *ngIf="form.get('description')?.touched && form.get('description')?.invalid">
+          Description is required (min 10 characters).
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label for="description">Description</label>
-      <textarea id="description" formControlName="description" class="form-control"></textarea>
+
+    <!-- ===== Variants ===== -->
+    <div class="form-section variants-section" formArrayName="variants">
+      <div class="variants-header">
+        <h3 class="section-title">Variants <span class="hint">(optional)</span></h3>
+        <button type="button" class="btn btn-ghost" (click)="addVariant()">+ Add Variant</button>
+      </div>
+
+      <div
+        class="variant-card"
+        *ngFor="let variant of variants.controls; let i = index"
+        [formGroupName]="i"
+      >
+        <div class="form-row">
+          <div class="form-group">
+            <label>SKU *</label>
+            <input formControlName="sku" class="form-control" placeholder="S24-BLK-128" />
+          </div>
+          <div class="form-group">
+            <label>Price *</label>
+            <input formControlName="price" type="number" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Stock *</label>
+            <input formControlName="stock" type="number" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Attributes <span class="hint">(key:value, comma separated)</span></label>
+          <input formControlName="attributes" class="form-control" placeholder="color:black, storage:128gb" />
+        </div>
+        <button type="button" class="btn btn-ghost remove-variant-btn" (click)="removeVariant(i)">
+          Remove Variant
+        </button>
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary">
-      {{ isEditMode ? 'Update Product' : 'Create Product' }}
-    </button>
+
+    <!-- ===== Submit ===== -->
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="isLoading || hasUploadingImages"
+      >
+        <span *ngIf="isLoading">Saving…</span>
+        <span *ngIf="!isLoading && hasUploadingImages">Uploading images…</span>
+        <span *ngIf="!isLoading && !hasUploadingImages">
+          {{ isEditMode ? 'Update Product' : 'Create Product' }}
+        </span>
+      </button>
+    </div>
+
   </form>
 </section>

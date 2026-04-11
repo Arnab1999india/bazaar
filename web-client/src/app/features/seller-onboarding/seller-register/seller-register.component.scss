@@ -1,94 +1,154 @@
+/* ═══════════════════════════════════════
+   BAZAAR — Seller Register  "Smooth Luxe"
+   ═══════════════════════════════════════ */
+
 .seller-register {
   display: flex;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: var(--sp-8) var(--sp-4);
+  background: var(--bg-page);
+  min-height: 100vh;
+  font-family: var(--font-sans);
 }
 
 .card {
   width: min(720px, 100%);
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  background: var(--bg-surface);
+  border-radius: var(--radius-2xl);
+  padding: var(--sp-8);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-xl);
+  animation: scaleIn var(--duration-slow) var(--ease-out) both;
+
+  h2 {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 var(--sp-2);
+    letter-spacing: -0.02em;
+  }
 }
 
 .subtitle {
-  color: #64748b;
-  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--sp-6);
+  line-height: var(--leading-relaxed);
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--sp-4);
+
+  label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-2);
+  }
 }
 
 .form-row {
   display: grid;
-  gap: 1rem;
+  gap: var(--sp-4);
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .form-control {
   width: 100%;
-  border-radius: 8px;
-  border: 1px solid #cbd5f5;
-  padding: 0.75rem;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-light);
+  padding: 0.65rem var(--sp-4);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  &::placeholder { color: var(--text-subtle); }
+  &:focus { border-color: #0ea5e9; box-shadow: var(--shadow-glow-seller); }
 }
 
-.input-with-action {
-  position: relative;
-}
-
-.input-with-action .form-control {
-  padding-right: 4.25rem;
-}
+.input-with-action { position: relative; }
+.input-with-action .form-control { padding-right: 4.25rem; }
 
 .toggle-visibility {
   position: absolute;
-  right: 0.5rem;
+  right: var(--sp-3);
   top: 50%;
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #0f172a;
+  color: var(--text-muted);
   font-weight: 600;
   cursor: pointer;
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  transition: color var(--transition-fast);
+  &:hover { color: var(--text-primary); }
 }
 
 .checkbox {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--sp-2);
   align-items: center;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  input[type="checkbox"] { accent-color: #0ea5e9; width: 16px; height: 16px; }
 }
 
 .btn {
   border: none;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
+  padding: 0.65rem 1.125rem;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
 .btn-primary {
-  background: #0f172a;
-  color: #ffffff;
+  background: #0ea5e9;
+  color: #fff;
   width: 100%;
+  box-shadow: 0 4px 12px rgba(14,165,233,0.3);
+  &:hover:not(:disabled) { background: #0284c7; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14,165,233,0.4); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 
 .btn-secondary {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-light);
+  &:hover:not(:disabled) { background: var(--bg-surface-3); border-color: var(--border-medium); }
 }
 
 .btn-ghost {
   background: transparent;
-  border: 1px solid #cbd5f5;
-  color: #0f172a;
+  border: 1.5px solid var(--border-light);
+  color: var(--text-secondary);
+  &:hover { background: var(--bg-surface-2); }
 }
 
-.error {
-  color: #dc2626;
-}
+.error { color: var(--color-danger-text); font-size: var(--text-xs); margin-top: var(--sp-1); }
+.success { color: var(--color-success-text); font-size: var(--text-xs); margin-top: var(--sp-1); }
 
-.success {
-  color: #16a34a;
+.login-link {
+  margin-top: var(--sp-5);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+
+  .link {
+    color: #0ea5e9;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    &:hover { text-decoration: underline; }
+  }
 }

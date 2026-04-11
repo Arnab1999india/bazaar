@@ -1,30 +1,178 @@
 <section class="products">
   <div class="header">
     <h2>Your Products</h2>
-    <a routerLink="/seller/products/new" class="btn btn-primary">Add Product</a>
+    <a routerLink="/seller/products/new" class="btn btn-primary">+ Add Product</a>
   </div>
 
-  <table class="product-table">
+  <!-- ===== Filter Bar ===== -->
+  <div class="filter-bar" *ngIf="!isLoading && products.length">
+
+    <!-- Category multi-select -->
+    <div class="multi-select" [class.open]="categoryFilter.open">
+      <div
+        class="ms-trigger"
+        (click)="categoryFilter.open = !categoryFilter.open; $event.stopPropagation()"
+      >
+        <span class="ms-label">
+          <span *ngIf="!categoryFilter.selected.length" class="placeholder">Category</span>
+          <span
+            class="chip"
+            *ngFor="let val of categoryFilter.selected"
+          >
+            {{ val }}
+            <button
+              type="button"
+              class="chip-remove"
+              (click)="removeCategoryFilter(val); $event.stopPropagation()"
+            >&#x2715;</button>
+          </span>
+        </span>
+        <span class="ms-arrow">{{ categoryFilter.open ? '▲' : '▼' }}</span>
+      </div>
+
+      <div
+        class="ms-dropdown"
+        *ngIf="categoryFilter.open"
+        (click)="$event.stopPropagation()"
+      >
+        <input
+          class="ms-search"
+          type="text"
+          placeholder="Search categories…"
+          [(ngModel)]="categoryFilter.search"
+          (click)="$event.stopPropagation()"
+          autofocus
+        />
+        <div class="ms-options">
+          <label class="ms-option" *ngFor="let opt of categoryOptions">
+            <input
+              type="checkbox"
+              [checked]="categoryFilter.selected.includes(opt.value)"
+              (change)="toggleCategoryOption(opt.value)"
+            />
+            <span>{{ opt.label }}</span>
+          </label>
+          <div class="ms-empty" *ngIf="!categoryOptions.length">
+            No categories found
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock status multi-select -->
+    <div class="multi-select" [class.open]="stockFilter.open">
+      <div
+        class="ms-trigger"
+        (click)="stockFilter.open = !stockFilter.open; $event.stopPropagation()"
+      >
+        <span class="ms-label">
+          <span *ngIf="!stockFilter.selected.length" class="placeholder">Stock Status</span>
+          <span
+            class="chip"
+            *ngFor="let val of stockFilter.selected"
+          >
+            {{ val === 'in-stock' ? 'In Stock' : 'Out of Stock' }}
+            <button
+              type="button"
+              class="chip-remove"
+              (click)="removeStockFilter(val); $event.stopPropagation()"
+            >&#x2715;</button>
+          </span>
+        </span>
+        <span class="ms-arrow">{{ stockFilter.open ? '▲' : '▼' }}</span>
+      </div>
+
+      <div
+        class="ms-dropdown"
+        *ngIf="stockFilter.open"
+        (click)="$event.stopPropagation()"
+      >
+        <input
+          class="ms-search"
+          type="text"
+          placeholder="Search…"
+          [(ngModel)]="stockFilter.search"
+          (click)="$event.stopPropagation()"
+        />
+        <div class="ms-options">
+          <label class="ms-option" *ngFor="let opt of filteredStockOptions">
+            <input
+              type="checkbox"
+              [checked]="stockFilter.selected.includes(opt.value)"
+              (change)="toggleStockOption(opt.value)"
+            />
+            <span>{{ opt.label }}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clear + count -->
+    <button
+      class="btn btn-ghost clear-btn"
+      *ngIf="activeFilterCount > 0"
+      (click)="clearAllFilters()"
+    >
+      Clear ({{ activeFilterCount }})
+    </button>
+
+    <span class="result-count">
+      {{ filteredProducts.length }} of {{ products.length }}
+    </span>
+  </div>
+
+  <!-- States -->
+  <p class="state" *ngIf="isLoading">Loading your products…</p>
+  <p class="state error" *ngIf="!isLoading && errorMessage">{{ errorMessage }}</p>
+
+  <div class="empty" *ngIf="!isLoading && !errorMessage && !products.length">
+    <p>No products added yet.</p>
+    <a routerLink="/seller/products/new" class="btn btn-secondary">Add Product</a>
+  </div>
+
+  <div class="empty" *ngIf="!isLoading && products.length && !filteredProducts.length">
+    <p>No products match the selected filters.</p>
+    <button class="btn btn-secondary" (click)="clearAllFilters()">Clear Filters</button>
+  </div>
+
+  <!-- ===== Products Table ===== -->
+  <table class="product-table" *ngIf="!isLoading && filteredProducts.length">
     <thead>
       <tr>
+        <th class="th-img">Image</th>
         <th>Name</th>
+        <th>Category</th>
         <th>Price</th>
         <th>Stock</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let product of products">
-        <td>{{ product.name }}</td>
-        <td>₹{{ product.price }}</td>
-        <td>{{ product.stock }}</td>
+      <tr *ngFor="let product of filteredProducts">
+        <td class="td-img">
+          <img
+            *ngIf="product.imageUrl?.[0]"
+            [src]="product.imageUrl![0]"
+            [alt]="product.name"
+            class="product-thumb"
+          />
+          <div *ngIf="!product.imageUrl?.[0]" class="no-img">&#128247;</div>
+        </td>
+        <td class="td-name">{{ product.name }}</td>
+        <td class="td-category">{{ product.category }}</td>
+        <td>&#8377;{{ product.price | number: '1.0-0' }}</td>
+        <td>
+          <span
+            class="stock-badge"
+            [class.in-stock]="product.stockStatus === 'in-stock'"
+            [class.out-of-stock]="product.stockStatus === 'out-of-stock'"
+          >
+            {{ stockLabel(product) }}
+          </span>
+        </td>
         <td class="actions">
-          <button class="btn btn-secondary" (click)="editProduct(product.id)">
-            Edit
-          </button>
-          <button class="btn btn-ghost" (click)="deleteProduct(product.id)">
-            Delete
-          </button>
+          <button class="btn btn-secondary" (click)="editProduct(product)">Edit</button>
+          <button class="btn btn-ghost danger" (click)="deleteProduct(product)">Delete</button>
         </td>
       </tr>
     </tbody>

@@ -1,0 +1,49 @@
+<div class="overlay" *ngIf="isOpen">
+  <div class="modal">
+    <button class="close" type="button" (click)="close()">×</button>
+    <h3>{{ title }}</h3>
+    <p>Share this product with friends</p>
+
+    <div class="share-actions">
+      <a
+        class="share-btn"
+        [href]="'mailto:?subject=' + encodedTitle + '&body=' + encodedUrl"
+        target="_blank"
+        rel="noopener"
+      >
+        Email
+      </a>
+      <a
+        class="share-btn"
+        [href]="'https://pinterest.com/pin/create/button/?url=' + encodedUrl"
+        target="_blank"
+        rel="noopener"
+      >
+        Pinterest
+      </a>
+      <a
+        class="share-btn"
+        [href]="'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl"
+        target="_blank"
+        rel="noopener"
+      >
+        Facebook
+      </a>
+      <a
+        class="share-btn"
+        [href]="'https://x.com/intent/tweet?url=' + encodedUrl + '&text=' + encodedTitle"
+        target="_blank"
+        rel="noopener"
+      >
+        X
+      </a>
+    </div>
+
+    <div class="share-link">
+      <input type="text" [value]="shareUrl" readonly />
+      <button type="button" class="btn-copy" (click)="copyLink()">
+        Copy Link
+      </button>
+    </div>
+  </div>
+</div>

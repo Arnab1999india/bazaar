@@ -28,13 +28,17 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.registerForm = this.fb.group(
       {
         name: [
           '',
-          [Validators.required, Validators.minLength(2), Validators.maxLength(50)],
+          [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(50),
+          ],
         ],
         email: ['', [Validators.required, Validators.email]],
         password: [
@@ -49,7 +53,7 @@ export class RegisterComponent {
         confirmPassword: ['', [Validators.required]],
         terms: [false, [Validators.requiredTrue]],
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
@@ -80,7 +84,7 @@ export class RegisterComponent {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
@@ -89,16 +93,29 @@ export class RegisterComponent {
     const { name, email, password } = this.registerForm.value;
     const payload = {
       name: String(name ?? '').trim(),
-      email: String(email ?? '').trim().toLowerCase(),
+      email: String(email ?? '')
+        .trim()
+        .toLowerCase(),
       password: String(password ?? ''),
     };
     this.isSubmitting = true;
     this.errorMessage = '';
 
     this.authService.register(payload).subscribe({
-      next: () => {
+      next: (res) => {
         this.isSubmitting = false;
-        this.router.navigate(['/auth/login']);
+
+        this.authService.persistSessionFromResponse(res.data, true);
+
+        // ✅ FIX: Redirect to dashboard/home based on role
+        const user = res.data.user;
+        if (user.role === 'admin') {
+          this.router.navigate(['/admin']);
+        } else if (user.role === 'seller') {
+          this.router.navigate(['/seller']);
+        } else {
+          this.router.navigate(['/']); // Customer goes to home
+        }
       },
       error: (err) => {
         this.isSubmitting = false;

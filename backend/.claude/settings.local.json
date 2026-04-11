@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Arnab Adak/Projects/Bazaar/web-client/**)",
+      "Bash(npx ng:*)"
+    ]
+  }
+}

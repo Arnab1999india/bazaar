@@ -1,0 +1,193 @@
+<div class="cart-container">
+  <div class="cart-main">
+    <div class="cart-header">
+      <div class="header-title">
+        <h1>Shopping Cart</h1>
+        <a href="javascript:void(0)" class="deselect-link"
+          >Deselect all items</a
+        >
+      </div>
+      <div class="header-price-label">Price</div>
+    </div>
+
+    <div *ngIf="items.length === 0" class="empty-cart">
+      <h2>Your Bazaar Cart is empty.</h2>
+      <a routerLink="/products">Shop today's deals</a>
+    </div>
+
+    <div class="cart-list">
+      <div class="cart-item" *ngFor="let item of items">
+        <div class="item-selector">
+          <input type="checkbox" checked />
+        </div>
+
+        <div class="item-image" [routerLink]="['/products', item.product.id]">
+          <img
+            [src]="item.product.imageUrl?.[0] || 'https://via.placeholder.com/180'"
+            [alt]="item.product.name"
+          />
+        </div>
+
+        <div class="item-details">
+          <div class="item-header">
+            <h3 [routerLink]="['/products', item.product.id]">
+              {{ item.product.name }}
+            </h3>
+            <span class="price-mobile"
+              >₹{{ item.product.price | number : "1.0-0" }}</span
+            >
+          </div>
+
+          <div class="stock-status">In stock</div>
+          <div class="shipping-info">
+            <span class="prime-text">✓prime</span>
+            <span class="delivery-text">FREE delivery <b>Tomorrow</b></span>
+          </div>
+
+          <div class="gift-option">
+            <input type="checkbox" id="gift-{{ item.product.id }}" />
+            <label for="gift-{{ item.product.id }}"
+              >This will be a gift <a href="#">Learn more</a></label
+            >
+          </div>
+
+          <div class="item-meta">
+            <b>Style Name:</b> {{ item.product.category }}
+            <br />
+            <b>Colour:</b> Black
+          </div>
+
+          <div class="item-actions">
+            <div class="qty-picker">
+              <button class="qty-btn" (click)="decreaseQty(item)">−</button>
+              <span class="qty-val">{{ item.quantity }}</span>
+              <button class="qty-btn" (click)="increaseQty(item)">+</button>
+            </div>
+
+            <div class="action-links">
+              <span class="separator">|</span>
+              <a (click)="deleteItem(item)">Delete</a>
+              <span class="separator">|</span>
+              <a href="javascript:void(0)" (click)="saveForLater(item)"
+                >Save for later</a
+              >
+              <span class="separator">|</span>
+              <a href="javascript:void(0)">See more like this</a>
+              <span class="separator">|</span>
+              <a href="javascript:void(0)" (click)="openShare(item)">Share</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-price">
+          <strong>₹{{ item.product.price | number : "1.0-0" }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-footer" *ngIf="items.length > 0">
+      <span class="subtotal-label">Subtotal ({{ itemCount }} items):</span>
+      <span class="subtotal-value">&#8377;{{ subtotal | number : "1.2-2" }}</span>
+    </div>
+
+    <div class="saved-section" *ngIf="savedItems.length > 0">
+      <h2>Saved for later ({{ savedItems.length }} items)</h2>
+      <div class="cart-list">
+        <div class="cart-item" *ngFor="let item of savedItems">
+          <div class="item-image" [routerLink]="['/products', item.product.id]">
+            <img
+              [src]="item.product.imageUrl?.[0] || 'https://via.placeholder.com/180'"
+              [alt]="item.product.name"
+            />
+          </div>
+
+          <div class="item-details">
+            <div class="item-header">
+              <h3 [routerLink]="['/products', item.product.id]">
+                {{ item.product.name }}
+              </h3>
+              <span class="price-mobile"
+                >&#8377;{{ item.product.price | number : "1.0-0" }}</span
+              >
+            </div>
+            <div class="item-actions">
+              <div class="action-links">
+                <a href="javascript:void(0)" (click)="moveToCart(item)"
+                  >Move to cart</a
+                >
+                <span class="separator">|</span>
+                <a href="javascript:void(0)" (click)="removeSavedItem(item)"
+                  >Delete</a
+                >
+                <span class="separator">|</span>
+                <a href="javascript:void(0)" (click)="openShare(item)"
+                  >Share</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="item-price">
+            <strong>&#8377;{{ item.product.price | number : "1.0-0" }}</strong>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <div class="cart-sidebar" *ngIf="items.length > 0">
+    <div class="subtotal-box">
+      <div class="subtotal-row">
+        <span class="label">Subtotal ({{ itemCount }} items):</span>
+        <span class="value">₹{{ subtotal | number : "1.2-2" }}</span>
+      </div>
+
+      <div class="gift-check">
+        <input type="checkbox" id="cart-gift" />
+        <label for="cart-gift">This order contains a gift</label>
+      </div>
+
+      <button class="btn-proceed" (click)="proceedToBuy()">
+        Proceed to Buy
+      </button>
+
+      <div class="emi-box">
+        <div class="emi-header">
+          <span>EMI Available</span>
+          <span class="chevron">⌄</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="recommendations-box">
+      <h4>Products related to items in your cart</h4>
+      <span class="sponsored-label"
+        >Sponsored <span class="info-icon">ⓘ</span></span
+      >
+
+      <div class="rec-item" *ngFor="let rec of relatedProducts">
+        <div class="rec-img">
+          <img [src]="rec.image" alt="Related" />
+        </div>
+        <div class="rec-info">
+          <a href="#" class="rec-title">{{ rec.name }}</a>
+          <div class="rec-rating">
+            <span class="stars">★★★★☆</span>
+            <span class="count">{{ rec.ratingCount | number }}</span>
+          </div>
+          <div class="rec-price">
+            <span class="symbol">₹</span>{{ rec.price }}
+          </div>
+          <button class="btn-see-options">See all buying options</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<app-share-modal
+  [isOpen]="shareModalOpen"
+  [title]="shareTitle"
+  [shareUrl]="shareUrl"
+  (closed)="closeShare()"
+></app-share-modal>

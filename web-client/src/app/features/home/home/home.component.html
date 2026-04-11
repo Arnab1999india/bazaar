@@ -1,52 +1,162 @@
-<section class="hero-section">
-  <div class="container">
-    <h1>Welcome to Bazaar</h1>
-    <p>Discover the best trends in fashion, electronics, and more.</p>
-    <button class="cta-btn" (click)="handleShopNow()">Shop Now</button>
-  </div>
-</section>
-<div class="home-container">
-  <section class="hero">
-    <h1>Shop the latest deals</h1>
-    <button class="shop-now-btn" (click)="handleShopNow()">Shop now</button>
-  </section>
+<div class="home-wrapper">
 
-  <section class="grid-section">
-    <div class="card" *ngFor="let cat of categories">
-      <h2>{{ cat.title }}</h2>
-
-      <div class="image-container">
-        <img
-          [src]="cat.image"
-          alt="{{ cat.title }}"
-          onerror="this.src='https://via.placeholder.com/300x250?text=Product+Image'"
-        />
+  <!-- ── Hero ── -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span>★</span> India's Fastest Growing Marketplace
       </div>
+      <h1>
+        Discover Trends<br>
+        <span class="hero-accent">That Matter</span>
+      </h1>
+      <p>From fashion to electronics, find everything you need — curated, delivered, trusted.</p>
+      <div class="hero-actions">
+        <button class="cta-btn" (click)="handleShopNow()">
+          Shop Now
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>
+        </button>
+        <a routerLink="/auth/seller-register" class="cta-btn-ghost">Start Selling</a>
+      </div>
+    </div>
 
-      <button class="card-link" (click)="handleShopNow()">
-        {{ cat.link }}
-      </button>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-value">1M+</span>
+        <span class="stat-label">Happy Buyers</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">50K+</span>
+        <span class="stat-label">Products</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">10K+</span>
+        <span class="stat-label">Sellers</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">4.8★</span>
+        <span class="stat-label">Avg Rating</span>
+      </div>
     </div>
   </section>
 
-  <div class="discover-bar">
-    <h2>Discover more</h2>
-  </div>
-</div>
-<section class="categories">
-  <div class="container">
-    <h2>Shop by Category</h2>
-    <div class="grid-container">
-      <div class="card">Electronics</div>
-      <div class="card">Fashion</div>
-      <div class="card">Home & Living</div>
+  <!-- ── Features Strip ── -->
+  <div class="features-strip">
+    <div class="features-inner">
+      <div class="feature-item">
+        <div class="feature-icon">🚚</div>
+        <div class="feature-text">
+          <h4>Free Delivery</h4>
+          <p>On orders above ₹499 — always.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">↩️</div>
+        <div class="feature-text">
+          <h4>Easy Returns</h4>
+          <p>Hassle-free 10-day return policy.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-text">
+          <h4>Secure Payments</h4>
+          <p>100% protected by Razorpay.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🏆</div>
+        <div class="feature-text">
+          <h4>Quality Assured</h4>
+          <p>Every seller verified by Bazaar.</p>
+        </div>
+      </div>
     </div>
   </div>
-</section>
 
-<section class="featured">
-  <div class="container">
-    <h2>Trending Now</h2>
-    <p>Loading best sellers...</p>
-  </div>
-</section>
+  <!-- ── Shop by Category ── -->
+  <section class="section-container categories">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>Shop by Category</h2>
+        <p>Browse our curated collections</p>
+      </div>
+      <a routerLink="/products" class="view-all">
+        View All
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+        </svg>
+      </a>
+    </div>
+
+    @if (categoriesLoading) {
+      <div class="category-grid">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="category-card skeleton">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-text"></div>
+          </div>
+        }
+      </div>
+    } @else if (categories.length === 0) {
+      <p class="empty-msg">No categories found.</p>
+    } @else {
+      <div class="category-grid">
+        @for (cat of categories; track cat.id) {
+          <div class="category-card" (click)="navigateToCategory(cat.slug)">
+            <div class="img-wrapper">
+              <img
+                [src]="getCategoryImage(cat.slug, cat.name)"
+                [alt]="cat.name"
+                onerror="this.src='https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&auto=format&fit=crop&q=60'"
+              />
+            </div>
+            <h3>{{ cat.name }}</h3>
+            @if (cat.count > 0) {
+              <span class="product-count">{{ cat.count }} products</span>
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ── Trending Now ── -->
+  <section class="section-container featured">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>Trending Now</h2>
+        <p>What's hot this week</p>
+      </div>
+    </div>
+    <div class="trending-grid">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="placeholder-card">
+          <div class="placeholder-img"></div>
+          <div class="placeholder-text"></div>
+          <div class="placeholder-text short"></div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ── Seller Banner ── -->
+  <section class="seller-banner">
+    <div class="content">
+      <div class="banner-eyebrow">🏪 For Entrepreneurs</div>
+      <h2>Become a Seller on Bazaar</h2>
+      <p>Start your business today. Reach millions of customers across India and grow your brand with our powerful seller tools.</p>
+      <div class="actions">
+        <a routerLink="/auth/seller-register" class="btn-seller-primary">
+          Register Now →
+        </a>
+        <a routerLink="/auth/seller-login" class="btn-seller-secondary">
+          Seller Login
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>

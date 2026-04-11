@@ -20,14 +20,14 @@ export class OtpValidationComponent {
   otpForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
-  private email = '';
+  public email = '';
   private purpose: 'password-reset' | 'registration' = 'password-reset';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.otpForm = this.fb.group({
       otp: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
@@ -62,12 +62,25 @@ export class OtpValidationComponent {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const onSuccess = () => {
+    const onSuccess = (res?: any) => {
       this.isSubmitting = false;
       if (this.purpose === 'registration') {
-        this.router.navigate(['/auth/login']);
+        // ✅ FIX: For registration, persist session and redirect to dashboard
+        if (res?.data) {
+          this.authService.persistSessionFromResponse(res.data, true);
+
+          const user = res.data.user;
+          if (user.role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else if (user.role === 'seller') {
+            this.router.navigate(['/seller']);
+          } else {
+            this.router.navigate(['/']);
+          }
+        }
         return;
       }
+      // For password reset
       this.router.navigate(['/auth/reset-password'], {
         queryParams: { email: this.email },
       });

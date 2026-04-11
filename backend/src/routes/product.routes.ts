@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { ProductController } from "../controllers/product.controller";
-import { auth } from "../middlewares/auth.middleware";
+import { auth, authorize } from "../middlewares/auth.middleware";
+import { requireApprovedSeller } from "../middlewares/sellerApproval.middleware";
+import { UserRole } from "../interfaces/user.interface";
 import { asyncHandler } from "../utils/asyncHandler";
+import { productImageUpload } from "../middlewares/upload.middleware";
 
 const router = Router();
 const productController = new ProductController();
@@ -26,18 +29,32 @@ router.get(
 
 // Protected routes (require authentication)
 router.post(
+  "/upload-images",
+  auth,
+  authorize(UserRole.SELLER, UserRole.ADMIN),
+  requireApprovedSeller,
+  productImageUpload.array("images", 5),
+  asyncHandler(productController.uploadImages.bind(productController))
+);
+router.post(
   "/",
-  // auth,
+  auth,
+  authorize(UserRole.SELLER, UserRole.ADMIN),
+  requireApprovedSeller,
   asyncHandler(productController.createProduct.bind(productController))
 );
 router.put(
   "/:id",
-  // auth,
+  auth,
+  authorize(UserRole.SELLER, UserRole.ADMIN),
+  requireApprovedSeller,
   asyncHandler(productController.updateProduct.bind(productController))
 );
 router.delete(
   "/:id",
-  // auth,
+  auth,
+  authorize(UserRole.SELLER, UserRole.ADMIN),
+  requireApprovedSeller,
   asyncHandler(productController.deleteProduct.bind(productController))
 );
 

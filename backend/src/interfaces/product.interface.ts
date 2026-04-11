@@ -28,6 +28,7 @@ export interface IProductInput {
   brand?: string;
   imageUrl?: string[];
   stockStatus?: "in-stock" | "out-of-stock";
+  totalStock?: number;
   tags?: string[];
   attributes?: ProductAttribute[];
   variants?: ProductVariant[];

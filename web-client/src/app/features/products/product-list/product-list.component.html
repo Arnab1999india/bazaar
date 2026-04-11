@@ -1,18 +1,107 @@
-<section class="product-list">
-  <div class="list-header">
-    <h2>Products</h2>
-    <p *ngIf="errorMessage" class="hint">{{ errorMessage }}</p>
-  </div>
+<div class="product-page">
 
-  <div *ngIf="isLoading" class="loading">Loading products...</div>
+  <!-- Category Sidebar -->
+  <aside class="category-sidebar">
+    <h3 class="sidebar-title">Categories</h3>
 
-  <div class="grid" *ngIf="!isLoading">
-    <app-product-card
-      *ngFor="let product of products"
-      [product]="product"
-      (view)="viewProduct($event)"
-      (addToCart)="addToCart($event)"
-      (buyNow)="buyNow($event)"
-    ></app-product-card>
-  </div>
-</section>
+    <ul class="category-list">
+      <li
+        class="cat-item"
+        [class.active]="!activeCategory"
+        (click)="selectCategory(null)"
+      >
+        <span class="cat-name">All Products</span>
+      </li>
+
+      @for (cat of categories; track cat.id) {
+      <li
+        class="cat-item"
+        [class.active]="activeCategory === cat.slug"
+        (click)="selectCategory(cat.slug)"
+      >
+        <div class="cat-row">
+          <span class="cat-name">{{ cat.name }}</span>
+          <span class="cat-badge">{{ cat.count }}</span>
+          @if (cat.children && cat.children.length > 0) {
+          <button
+            class="expand-btn"
+            (click)="toggleExpand(cat.id, $event)"
+            [attr.aria-label]="isExpanded(cat.id) ? 'Collapse' : 'Expand'"
+          >
+            {{ isExpanded(cat.id) ? '▲' : '▼' }}
+          </button>
+          }
+        </div>
+
+        @if (cat.children && cat.children.length > 0 && isExpanded(cat.id)) {
+        <ul class="sub-list">
+          @for (child of cat.children; track child.id) {
+          <li
+            class="sub-item"
+            [class.active]="activeCategory === child.slug"
+            (click)="selectCategory(child.slug); $event.stopPropagation()"
+          >
+            <span class="cat-name">{{ child.name }}</span>
+            <span class="cat-badge">{{ child.count }}</span>
+          </li>
+          }
+        </ul>
+        }
+      </li>
+      }
+    </ul>
+  </aside>
+
+  <!-- Product Content -->
+  <main class="product-content">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="breadcrumb">
+      <span class="crumb" (click)="selectCategory(null)">All Products</span>
+      @if (activeCategory) {
+      <span class="crumb-sep">›</span>
+      <span class="crumb crumb-active">{{ activeCategoryName }}</span>
+      }
+    </nav>
+
+    <div class="list-header">
+      <h2>{{ activeCategoryName }}</h2>
+      @if (!isLoading) {
+      <p class="result-count">{{ products.length }} result{{ products.length !== 1 ? 's' : '' }}</p>
+      }
+      @if (errorMessage) {
+      <p class="hint">{{ errorMessage }}</p>
+      }
+    </div>
+
+    @if (isLoading) {
+    <div class="loading">
+      <div class="loading-grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton-card">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+        }
+      </div>
+    </div>
+    } @else if (products.length === 0) {
+    <div class="empty-state">
+      <p>No products found in this category.</p>
+      <button class="btn-clear" (click)="selectCategory(null)">Browse All Products</button>
+    </div>
+    } @else {
+    <div class="grid">
+      <app-product-card
+        *ngFor="let product of products"
+        [product]="product"
+        (view)="viewProduct($event)"
+        (addToCart)="addToCart($event)"
+        (buyNow)="buyNow($event)"
+      ></app-product-card>
+    </div>
+    }
+
+  </main>
+</div>

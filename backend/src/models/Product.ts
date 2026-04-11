@@ -223,12 +223,14 @@ productSchema.pre(
 );
 
 productSchema.pre("save", function (next) {
-  if (this.isModified("variants") && Array.isArray(this.variants)) {
+  if (this.isModified("variants") && Array.isArray(this.variants) && this.variants.length > 0) {
     this.totalStock = this.variants.reduce(
       (acc: number, variant: { stock: number }) => acc + (variant.stock || 0),
       0
     );
     this.stockStatus = this.totalStock > 0 ? "in-stock" : "out-of-stock";
+  } else if (this.isModified("totalStock") && (!Array.isArray(this.variants) || this.variants.length === 0)) {
+    this.stockStatus = (this.totalStock ?? 0) > 0 ? "in-stock" : "out-of-stock";
   }
   next();
 });

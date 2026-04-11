@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { AppError, ErrorType } from "../interfaces/error.interface";
 import { envConfig } from "../config/env.config";
@@ -9,11 +9,11 @@ export interface AuthRequest extends Request {
   user?: any;
 }
 
-export const auth = async (
+export const auth: RequestHandler = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
-) => {
+  next: NextFunction,
+): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -21,7 +21,7 @@ export const auth = async (
       throw new AppError(
         ErrorType.AUTHENTICATION,
         "Authentication required",
-        401
+        401,
       );
     }
 
@@ -34,25 +34,26 @@ export const auth = async (
 
     req.user = user;
     next();
-  } catch (error) {
+  } catch (error: any) {
     next(
       new AppError(
         ErrorType.AUTHENTICATION,
         "Invalid authentication token",
-        401
-      )
+        401,
+      ),
     );
   }
 };
 
-export const optionalAuth = async (
+export const optionalAuth: RequestHandler = async (
   req: AuthRequest,
   _res: Response,
-  next: NextFunction
-) => {
+  next: NextFunction,
+): Promise<void> => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
   if (!token) {
-    return next();
+    next();
+    return;
   }
 
   try {
@@ -67,44 +68,48 @@ export const optionalAuth = async (
   next();
 };
 
-export const authorize = (...roles: UserRole[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authorize = (...roles: UserRole[]): RequestHandler => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return next(
-        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401)
+      next(
+        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401),
       );
+      return;
     }
 
     if (!roles.includes(req.user.role)) {
-      return next(
+      next(
         new AppError(
           ErrorType.AUTHORIZATION,
           "Not authorized to access this resource",
-          403
-        )
+          403,
+        ),
       );
+      return;
     }
 
     next();
   };
 };
 
-export const validateOwnership = (resourceUserId: string) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+export const validateOwnership = (resourceUserId: string): RequestHandler => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return next(
-        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401)
+      next(
+        new AppError(ErrorType.AUTHENTICATION, "Authentication required", 401),
       );
+      return;
     }
 
     if (req.user.role !== UserRole.ADMIN && req.user.id !== resourceUserId) {
-      return next(
+      next(
         new AppError(
           ErrorType.AUTHORIZATION,
           "Not authorized to access this resource",
-          403
-        )
+          403,
+        ),
       );
+      return;
     }
 
     next();

@@ -1,54 +1,57 @@
-<div class="otp-validation-container">
-  <div class="otp-validation-card">
-    <h2>Verify Your Email</h2>
-    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-    <p>
-      We've sent a 6-digit code to your email. Enter it below to verify your
-      account.
-    </p>
-    <form [formGroup]="otpForm" (ngSubmit)="onSubmit()">
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Verify Email</h2>
+      <p>
+        We've sent a 6-digit code to <strong>{{ email }}</strong>
+      </p>
+    </div>
+
+    @if (errorMessage) {
+    <div class="alert-error">
+      {{ errorMessage }}
+    </div>
+    }
+
+    <form [formGroup]="otpForm" (ngSubmit)="onSubmit()" class="auth-form">
       <div class="form-group">
-        <label for="otp">OTP Code</label>
+        <label for="otp">Enter Verification Code</label>
         <input
           type="text"
           id="otp"
           formControlName="otp"
-          placeholder="Enter 6-digit code"
+          placeholder="0 0 0 0 0 0"
           class="form-control otp-input"
           maxlength="6"
           (input)="onOtpInput($event)"
+          [class.invalid]="
+            otpForm.get('otp')?.invalid && otpForm.get('otp')?.touched
+          "
         />
-        <div
-          class="error"
-          *ngIf="otpForm.get('otp')?.invalid && otpForm.get('otp')?.touched"
-        >
-          <span *ngIf="otpForm.get('otp')?.errors?.['required']"
-            >OTP is required</span
-          >
-          <span *ngIf="otpForm.get('otp')?.errors?.['pattern']"
-            >OTP must be 6 digits</span
-          >
+        @if (otpForm.get('otp')?.invalid && otpForm.get('otp')?.touched) {
+        <div class="error-feedback">
+          @if (otpForm.get('otp')?.errors?.['required']) {
+          <span>Code is required</span>
+          } @if (otpForm.get('otp')?.errors?.['pattern']) {
+          <span>Please enter a 6-digit code</span>
+          }
         </div>
+        }
       </div>
 
       <button
         type="submit"
-        class="btn btn-primary"
+        class="btn-primary"
         [disabled]="otpForm.invalid || isSubmitting"
       >
-        {{ isSubmitting ? 'Verifying...' : 'Verify' }}
+        @if (isSubmitting) {
+        <span class="spinner"></span> Verifying... } @else { Verify Account }
       </button>
     </form>
 
-    <div class="links">
-      <p>
-        Didn't receive the code?
-        <a (click)="resendOtp()" class="link">Resend OTP</a>
-      </p>
-      <p>
-        Wrong email?
-        <a (click)="navigateToForgotPassword()" class="link">Change Email</a>
-      </p>
+    <div class="auth-footer">
+      <p>Didn't receive code? <a (click)="resendOtp()">Resend</a></p>
+      <a (click)="navigateToForgotPassword()" class="back-link">Change Email</a>
     </div>
   </div>
 </div>

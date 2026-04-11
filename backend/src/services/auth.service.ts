@@ -1,6 +1,7 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import ms from "ms";
 import bcrypt from "bcrypt";
+import { OAuth2Client } from "google-auth-library";
 import { User } from "../models/User";
 import {
   IUser,
@@ -13,16 +14,69 @@ import { envConfig } from "../config/env.config";
 import { OTPService } from "./otp.service";
 import { IOTPInput, IOTPVerifyInput } from "../interfaces/otp.interface";
 
+const googleClient = new OAuth2Client(envConfig.GOOGLE_CLIENT_ID);
+
 export class AuthService {
-  private static generateToken(userId: string): string {
-    const options: SignOptions = {
-      expiresIn: "7d", // Use a valid JWT expiration time format
-    };
-    return jwt.sign({ id: userId }, envConfig.JWT_SECRET as Secret, options);
+  private static generateTokens(userId: string): {
+    accessToken: string;
+    refreshToken: string;
+  } {
+    const accessToken = jwt.sign(
+      { id: userId },
+      envConfig.JWT_SECRET as Secret,
+      {
+        expiresIn: "15m", // Short-lived security
+      },
+    );
+
+    // In production, use a separate JWT_REFRESH_SECRET
+    const refreshToken = jwt.sign(
+      { id: userId },
+      envConfig.JWT_SECRET as Secret,
+      {
+        expiresIn: "7d",
+      },
+    );
+
+    return { accessToken, refreshToken };
   }
 
+  static async refresh(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    try {
+      if (!refreshToken) {
+        throw new AppError(
+          ErrorType.AUTHENTICATION,
+          "Refresh token is required",
+          400,
+        );
+      }
+
+      // Verify the token
+      const decoded = jwt.verify(
+        refreshToken,
+        envConfig.JWT_SECRET as Secret,
+      ) as { id: string };
+
+      // Check if user still exists
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        throw new AppError(ErrorType.AUTHENTICATION, "User not found", 401);
+      }
+
+      // Generate new pair
+      return this.generateTokens(user.id);
+    } catch (error) {
+      throw new AppError(
+        ErrorType.AUTHENTICATION,
+        "Invalid or expired refresh token",
+        401,
+      );
+    }
+  }
   static async initiateRegistration(
-    userData: IUserInput
+    userData: IUserInput,
   ): Promise<{ message: string }> {
     try {
       // Check if user already exists
@@ -54,14 +108,15 @@ export class AuthService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error initiating registration",
-        500
+        500,
       );
     }
   }
 
-  static async verifyRegistration(
-    verifyData: IOTPVerifyInput
-  ): Promise<{ token: string; user: IUser }> {
+  static async verifyRegistration(verifyData: IOTPVerifyInput): Promise<{
+    token: { accessToken: string; refreshToken: string };
+    user: IUser;
+  }> {
     try {
       // Verify OTP
       await OTPService.verifyOTP(verifyData);
@@ -79,7 +134,7 @@ export class AuthService {
       // Clean up verified OTP
       await OTPService.deleteVerifiedOTP(verifyData.email, "registration");
 
-      const token = this.generateToken(user.id);
+      const token = this.generateTokens(user.id);
 
       return {
         token,
@@ -90,14 +145,15 @@ export class AuthService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error verifying registration",
-        500
+        500,
       );
     }
   }
 
-  static async register(
-    userData: IUserInput
-  ): Promise<{ token: string; user: IUser }> {
+  static async register(userData: IUserInput): Promise<{
+    token: { accessToken: string; refreshToken: string };
+    user: IUser;
+  }> {
     try {
       // Check if user already exists
       const existingUser = await User.findOne({ email: userData.email });
@@ -112,7 +168,7 @@ export class AuthService {
         isVerified: true, // Direct registration is considered verified
       });
 
-      const token = this.generateToken(user.id);
+      const token = this.generateTokens(user.id);
 
       return {
         token,
@@ -124,20 +180,21 @@ export class AuthService {
     }
   }
 
-  static async login(
-    credentials: ILoginInput
-  ): Promise<{ token: string; user: IUser }> {
+  static async login(credentials: ILoginInput): Promise<{
+    token: { accessToken: string; refreshToken: string };
+    user: IUser;
+  }> {
     try {
       // Find user and select password (it's excluded by default)
       const user = await User.findOne({ email: credentials.email }).select(
-        "+password"
+        "+password",
       );
 
-      if (!user) {
+      if (!user || !(await user.comparePassword(credentials.password))) {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Invalid email or password",
-          401
+          401,
         );
       }
 
@@ -146,7 +203,7 @@ export class AuthService {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Please verify your email before logging in",
-          401
+          401,
         );
       }
 
@@ -156,11 +213,11 @@ export class AuthService {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Invalid email or password",
-          401
+          401,
         );
       }
 
-      const token = this.generateToken(user.id);
+      const token = this.generateTokens(user.id);
 
       return {
         token,
@@ -172,9 +229,50 @@ export class AuthService {
     }
   }
 
-  static async googleAuth(
-    profile: any
-  ): Promise<{ token: string; user: IUser }> {
+  static async googleTokenAuth(idToken: string): Promise<{
+    token: { accessToken: string; refreshToken: string };
+    user: IUser;
+  }> {
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: envConfig.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw new AppError(ErrorType.AUTHENTICATION, "Invalid Google token", 401);
+      }
+
+      let user = await User.findOne({ googleId: payload.sub });
+      if (!user) {
+        user = await User.findOne({ email: payload.email });
+        if (user) {
+          user.googleId = payload.sub;
+          if (!user.isVerified) user.isVerified = true;
+          await user.save();
+        } else {
+          user = await User.create({
+            name: payload.name || payload.email.split("@")[0],
+            email: payload.email,
+            googleId: payload.sub,
+            role: UserRole.CUSTOMER,
+            isVerified: true,
+          });
+        }
+      }
+
+      const token = this.generateTokens(user.id);
+      return { token, user: user.toJSON() as IUser };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(ErrorType.AUTHENTICATION, "Google authentication failed", 401);
+    }
+  }
+
+  static async googleAuth(profile: any): Promise<{
+    token: { accessToken: string; refreshToken: string };
+    user: IUser;
+  }> {
     try {
       let user = await User.findOne({ googleId: profile.id });
 
@@ -197,7 +295,7 @@ export class AuthService {
         }
       }
 
-      const token = this.generateToken(user.id);
+      const token = this.generateTokens(user.id);
 
       return {
         token,
@@ -207,7 +305,7 @@ export class AuthService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error during Google authentication",
-        500
+        500,
       );
     }
   }
@@ -215,7 +313,7 @@ export class AuthService {
   static async changePassword(
     userId: string,
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<void> {
     try {
       const user = await User.findById(userId).select("+password");
@@ -230,7 +328,7 @@ export class AuthService {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Current password is incorrect",
-          401
+          401,
         );
       }
 
@@ -244,7 +342,7 @@ export class AuthService {
   }
 
   static async resetPasswordRequest(
-    email: string
+    email: string,
   ): Promise<{ message: string }> {
     try {
       const user = await User.findOne({ email });
@@ -253,7 +351,7 @@ export class AuthService {
         throw new AppError(
           ErrorType.NOT_FOUND,
           "No account found with this email",
-          404
+          404,
         );
       }
 
@@ -271,13 +369,13 @@ export class AuthService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error processing password reset request",
-        500
+        500,
       );
     }
   }
 
   static async verifyPasswordResetOTP(
-    verifyData: IOTPVerifyInput
+    verifyData: IOTPVerifyInput,
   ): Promise<{ message: string }> {
     try {
       // Verify OTP
@@ -294,19 +392,19 @@ export class AuthService {
 
   static async resetPassword(
     email: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<{ message: string }> {
     try {
       // Check if OTP was verified for password reset
       const isOTPVerified = await OTPService.isOTPVerified(
         email,
-        "password-reset"
+        "password-reset",
       );
       if (!isOTPVerified) {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Please verify OTP before resetting password",
-          401
+          401,
         );
       }
 
@@ -345,7 +443,7 @@ export class AuthService {
 
   static async updateProfile(
     userId: string,
-    updateData: Partial<IUserInput>
+    updateData: Partial<IUserInput>,
   ): Promise<IUser> {
     try {
       // Prevent updating sensitive fields
@@ -356,7 +454,7 @@ export class AuthService {
       const user = await User.findByIdAndUpdate(
         userId,
         { $set: updateData },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true },
       );
 
       if (!user) {

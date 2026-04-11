@@ -1,6 +1,7 @@
 <div class="login-container">
   <div class="login-card">
     <h2>Admin Sign In</h2>
+    <p class="subtitle">Restricted access — admin accounts are created by existing admins only.</p>
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
@@ -29,7 +30,7 @@
             class="eye-btn"
             (click)="togglePasswordVisibility()"
           >
-            <span>{{ showPassword ? 'Hide' : 'Show' }}</span>
+            <span>{{ showPassword ? "Hide" : "Show" }}</span>
           </button>
         </div>
       </div>
@@ -39,8 +40,13 @@
         class="btn btn-primary"
         [disabled]="loginForm.invalid || isLoading"
       >
-        {{ isLoading ? 'Signing in...' : 'Sign In' }}
+        {{ isLoading ? "Signing in..." : "Sign In" }}
       </button>
+      <div class="links">
+        <a (click)="navigateToForgotPassword()" class="link"
+          >Forgot Password?</a
+        >
+      </div>
     </form>
   </div>
 </div>

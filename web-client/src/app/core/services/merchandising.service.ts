@@ -1,18 +1,24 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { API_BASE_URL, API_ENDPOINTS } from '../constants/api.constants';
-import { ApiResponse, Product } from '../models/api.models';
+import { ApiResponse, Category, Product } from '../models/api.models';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class MerchandisingService {
+  private categoriesCache$?: Observable<ApiResponse<Category[]>>;
+
   constructor(private http: HttpClient, private authService: AuthService) {}
 
-  getCategories(): Observable<ApiResponse<unknown>> {
-    return this.http.get<ApiResponse<unknown>>(
-      `${API_BASE_URL}${API_ENDPOINTS.merchandising.categories}`
-    );
+  getCategories(): Observable<ApiResponse<Category[]>> {
+    if (!this.categoriesCache$) {
+      this.categoriesCache$ = this.http.get<ApiResponse<Category[]>>(
+        `${API_BASE_URL}${API_ENDPOINTS.merchandising.categories}`
+      ).pipe(shareReplay(1));
+    }
+    return this.categoriesCache$;
   }
 
   getBrands(category?: string): Observable<ApiResponse<unknown>> {

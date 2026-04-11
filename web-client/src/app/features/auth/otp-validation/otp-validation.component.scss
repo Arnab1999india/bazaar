@@ -1,65 +1,141 @@
-.otp-validation-container {
+/* ═══════════════════════════════════════
+   BAZAAR — OTP Validation  "Smooth Luxe"
+   ═══════════════════════════════════════ */
+
+.auth-wrapper {
+  min-height: calc(100vh - 120px);
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 70vh;
-  background: #f5f5f5;
-  padding: 2rem;
+  justify-content: center;
+  background: var(--bg-page);
+  padding: var(--sp-8) var(--sp-4);
+  font-family: var(--font-sans);
 }
 
-.otp-validation-card {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  max-width: 420px;
+.auth-card {
+  background: var(--bg-surface);
   width: 100%;
+  max-width: 420px;
+  padding: var(--sp-8);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  text-align: center;
+  animation: scaleIn var(--duration-slow) var(--ease-out) both;
+}
+
+.auth-header {
+  margin-bottom: var(--sp-8);
+
+  .otp-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--sp-4);
+    display: block;
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-2);
+    letter-spacing: -0.02em;
+  }
+
+  p { color: var(--text-muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+  strong { color: var(--text-primary); font-weight: 700; }
+}
+
+.alert-error {
+  background: var(--color-danger-bg);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--color-danger-text);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--sp-6);
+  font-size: var(--text-sm);
 }
 
 .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--sp-6);
+  text-align: left;
+
+  label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-2);
+    text-align: center;
+  }
+}
+
+.otp-input {
+  text-align: center;
+  font-size: 1.75rem;
+  letter-spacing: 0.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #dcdcdc;
+  padding: 0.7rem var(--sp-4);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:focus { border-color: var(--brand-500); box-shadow: var(--shadow-glow-brand); }
+  &.invalid { border-color: var(--color-danger); }
 }
 
-.otp-input {
-  letter-spacing: 0.4rem;
-  text-align: center;
-  font-size: 1.25rem;
-}
-
-.btn {
-  width: 100%;
-  padding: 0.85rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
+.error-feedback { margin-top: var(--sp-2); font-size: var(--text-xs); color: var(--color-danger); text-align: center; }
 
 .btn-primary {
-  background: #2563eb;
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--n-900);
   color: #fff;
-}
-
-.error {
-  color: #dc2626;
-  font-size: 0.875rem;
-  margin-top: 0.35rem;
-}
-
-.links {
-  margin-top: 1rem;
-  text-align: center;
-  color: #555;
-}
-
-.link {
-  color: #2563eb;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
   cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+
+  &:hover:not(:disabled) { background: var(--n-800); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.auth-footer {
+  margin-top: var(--sp-6);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+
+  a {
+    color: var(--brand-500);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { text-decoration: underline; }
+  }
+
+  .back-link {
+    display: block;
+    margin-top: var(--sp-3);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    &:hover { color: var(--text-primary); }
+  }
 }

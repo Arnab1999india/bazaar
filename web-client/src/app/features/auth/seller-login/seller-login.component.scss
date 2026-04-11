@@ -1,42 +1,163 @@
+/* ═══════════════════════════════════════
+   BAZAAR — Seller Login  "Smooth Luxe"
+   Role accent: Sky (#0ea5e9)
+   ═══════════════════════════════════════ */
+
 .login-container {
+  min-height: calc(100vh - 120px);
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  background: var(--bg-page);
+  padding: var(--sp-8) var(--sp-4);
+  font-family: var(--font-sans);
 }
 
 .login-card {
-  width: min(420px, 100%);
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  width: min(440px, 100%);
+  background: var(--bg-surface);
+  border-radius: var(--radius-2xl);
+  padding: var(--sp-8);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  animation: scaleIn var(--duration-slow) var(--ease-out) both;
+}
+
+.login-card h2 {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-1);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--sp-6);
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--sp-5);
+
+  label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-2);
+  }
 }
 
 .form-control {
   width: 100%;
-  border-radius: 8px;
-  border: 1px solid #cbd5f5;
-  padding: 0.75rem;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-light);
+  padding: 0.7rem var(--sp-4);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &::placeholder { color: var(--text-subtle); }
+  &:hover  { border-color: var(--border-medium); }
+  &:focus  { border-color: #0ea5e9; box-shadow: var(--shadow-glow-seller); }
+}
+
+.password-input {
+  position: relative;
+
+  .form-control { padding-right: 3.5rem; }
+
+  .eye-btn {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    transition: color var(--transition-fast);
+    &:hover { color: var(--text-primary); }
+  }
 }
 
 .btn {
   width: 100%;
   border: none;
-  padding: 0.75rem;
-  border-radius: 10px;
+  padding: 0.8rem;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:active:not(:disabled) { transform: scale(0.98); }
 }
 
 .btn-primary {
-  background: #0f172a;
-  color: #ffffff;
+  background: #0ea5e9;
+  color: #fff;
+  &:hover:not(:disabled) { background: #0284c7; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14,165,233,0.35); }
 }
 
-.error {
-  color: #dc2626;
+.btn-secondary {
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-light);
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin-top: var(--sp-2);
+  &:hover { background: var(--bg-surface-3); border-color: var(--border-medium); }
+}
+
+.btn-block { display: block; width: 100%; }
+
+.error { color: var(--color-danger); font-size: var(--text-xs); margin-top: var(--sp-2); }
+
+.divider {
+  text-align: center;
+  margin: var(--sp-5) 0 var(--sp-4);
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+}
+
+.links {
+  margin-top: var(--sp-5);
+  text-align: center;
+
+  .link {
+    color: #0ea5e9;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    background: none;
+    border: none;
+    font-family: var(--font-sans);
+    transition: color var(--transition-fast);
+    &:hover { color: #0284c7; text-decoration: underline; }
+  }
 }

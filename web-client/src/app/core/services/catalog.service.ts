@@ -89,4 +89,14 @@ export class CatalogService {
       { headers: this.authService.authHeaders }
     );
   }
+
+  uploadProductImages(files: File[]): Observable<ApiResponse<string[]>> {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('images', file));
+    return this.http.post<ApiResponse<string[]>>(
+      `${API_BASE_URL}${API_ENDPOINTS.products.uploadImages}`,
+      formData,
+      { headers: this.authService.authHeaders }
+    );
+  }
 }

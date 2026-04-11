@@ -9,7 +9,7 @@ export class AuthController {
   static async initiateRegistration(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       const userData: IUserInput = req.body;
@@ -27,7 +27,7 @@ export class AuthController {
   static async verifyRegistration(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       const verifyData: IOTPVerifyInput = req.body;
@@ -70,6 +70,19 @@ export class AuthController {
     }
   }
 
+  static async googleTokenLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { idToken } = req.body;
+      if (!idToken) {
+        throw new AppError(ErrorType.VALIDATION, "idToken is required", 400);
+      }
+      const result = await AuthService.googleTokenAuth(idToken);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async googleCallback(req: Request, res: Response, next: NextFunction) {
     try {
       const authReq = req as AuthRequest;
@@ -77,7 +90,7 @@ export class AuthController {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Google authentication failed",
-          401
+          401,
         );
       }
 
@@ -98,7 +111,7 @@ export class AuthController {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Authentication required",
-          401
+          401,
         );
       }
 
@@ -114,20 +127,20 @@ export class AuthController {
   static async updateProfile(
     req: AuthRequest,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       if (!req.user) {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Authentication required",
-          401
+          401,
         );
       }
 
       const updatedUser = await AuthService.updateProfile(
         req.user.id,
-        req.body
+        req.body,
       );
 
       res.status(200).json({
@@ -142,14 +155,14 @@ export class AuthController {
   static async changePassword(
     req: AuthRequest,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       if (!req.user) {
         throw new AppError(
           ErrorType.AUTHENTICATION,
           "Authentication required",
-          401
+          401,
         );
       }
 
@@ -158,7 +171,7 @@ export class AuthController {
       await AuthService.changePassword(
         req.user.id,
         currentPassword,
-        newPassword
+        newPassword,
       );
 
       res.status(200).json({
@@ -173,7 +186,7 @@ export class AuthController {
   static async requestPasswordReset(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       const { email } = req.body;
@@ -191,7 +204,7 @@ export class AuthController {
   static async verifyPasswordResetOTP(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) {
     try {
       const verifyData: IOTPVerifyInput = req.body;
@@ -228,6 +241,20 @@ export class AuthController {
       res.status(200).json({
         success: true,
         data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async refresh(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { refreshToken } = req.body;
+      const result = await AuthService.refresh(refreshToken);
+
+      res.status(200).json({
+        success: true,
+        data: result, // { accessToken, refreshToken }
       });
     } catch (error) {
       next(error);

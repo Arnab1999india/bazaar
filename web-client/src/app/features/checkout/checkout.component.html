@@ -1,77 +1,233 @@
-<section class="checkout">
-  <h2>Checkout</h2>
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+<div class="checkout-page">
+  <div class="checkout-header">
+    <h1>Checkout</h1>
+    <span class="secure-lock">🔒 Secure checkout</span>
+  </div>
 
-  <div *ngIf="isLoading">Loading checkout...</div>
+  <div class="checkout-grid">
+    <div class="main-content">
+      <section class="checkout-step">
+        <div class="step-header">
+          <h3>1. Delivery Address</h3>
+          <button class="btn-link" (click)="changeAddress()">Change</button>
+        </div>
 
-  <div class="checkout-layout" *ngIf="!isLoading">
-    <form [formGroup]="addressForm" class="address-form">
-      <h3>Delivery Address</h3>
-      <div class="form-group">
-        <label for="fullName">Full Name</label>
-        <input id="fullName" formControlName="fullName" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="phone">Phone</label>
-        <input id="phone" formControlName="phone" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="line1">Address Line 1</label>
-        <input id="line1" formControlName="line1" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="line2">Address Line 2</label>
-        <input id="line2" formControlName="line2" class="form-control" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="city">City</label>
-          <input id="city" formControlName="city" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="state">State</label>
-          <input id="state" formControlName="state" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label for="postalCode">Postal Code</label>
-          <input
-            id="postalCode"
-            formControlName="postalCode"
-            class="form-control"
-          />
-        </div>
-      </div>
-    </form>
+        <div class="step-body">
+          <div class="selected-address" *ngIf="defaultAddress">
+            <p class="name">{{ defaultAddress.fullName }}</p>
+            <p>{{ defaultAddress.line1 }}</p>
+            <p *ngIf="defaultAddress.line2">{{ defaultAddress.line2 }}</p>
+            <p>
+              {{ defaultAddress.city }}, {{ defaultAddress.state }}
+              {{ defaultAddress.postalCode }}
+            </p>
+            <p>Phone: {{ defaultAddress.phone }}</p>
+            <a href="javascript:void(0)" class="add-instructions"
+              >Add delivery instructions</a
+            >
+          </div>
 
-    <div class="order-summary">
-      <h3>Order Summary</h3>
-      <div class="summary-item" *ngFor="let item of items">
-        <div>
-          <p class="title">{{ item.product.name }}</p>
-          <p class="meta">Qty: {{ item.quantity }}</p>
+          <div class="address-list" *ngIf="isChangingAddress">
+            <h4>Select an Address</h4>
+            <div class="address-option" *ngFor="let addr of savedAddresses">
+              <input
+                type="radio"
+                name="addr"
+                [checked]="addr === defaultAddress"
+                (change)="selectAddress(addr)"
+              />
+              <div class="addr-details">
+                <b>{{ addr.fullName }}</b> {{ addr.line1 }}
+                {{ addr.postalCode }}
+              </div>
+            </div>
+            <button class="btn-secondary small">+ Add a new address</button>
+          </div>
         </div>
-        <p class="price">₹{{ item.product.price * item.quantity }}</p>
+      </section>
+
+      <section class="checkout-step">
+        <div class="step-header">
+          <h3>2. Payment method</h3>
+        </div>
+        <div class="step-body">
+          <div class="payment-box wallet-box">
+            <h4>Your available balance</h4>
+            <label class="wallet-option">
+              <input
+                type="checkbox"
+                [checked]="useWallet"
+                (change)="toggleWallet($event)"
+              />
+              <div>
+                <span class="balance-text"
+                  >Use <b>₹{{ walletBalance | number : "1.2-2" }}</b> Bazaar
+                  Balance</span
+                >
+                <p class="sub-text" *ngIf="!useWallet">
+                  Available for this order
+                </p>
+                <p class="sub-text" *ngIf="useWallet">
+                  ₹{{ walletBalance }} applied to total
+                </p>
+              </div>
+            </label>
+            <div class="promo-input">
+              <input type="text" placeholder="Enter Code" />
+              <button class="btn-secondary small">Apply</button>
+            </div>
+          </div>
+
+          <h4>Another payment method</h4>
+          <div class="payment-options">
+            <label
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'card'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="card"
+                (change)="selectPaymentMethod('card')"
+              />
+              <span class="label">Credit or Debit Card</span>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/6963/6963703.png"
+                class="pay-icon"
+                alt="Card"
+              />
+            </label>
+
+            <label
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'upi'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="upi"
+                (change)="selectPaymentMethod('upi')"
+              />
+              <span class="label">UPI / Apps</span>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/217/217853.png"
+                class="pay-icon"
+                alt="UPI"
+              />
+            </label>
+
+            <label
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'netbanking'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="netbanking"
+                (change)="selectPaymentMethod('netbanking')"
+              />
+              <span class="label">Net Banking</span>
+            </label>
+
+            <label
+              class="payment-option"
+              [class.selected]="selectedPaymentMethod === 'cod'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                (change)="selectPaymentMethod('cod')"
+                checked
+              />
+              <span class="label">Cash on Delivery / Pay on Delivery</span>
+            </label>
+          </div>
+
+          <div class="use-payment-btn-container">
+            <button class="btn-yellow" (click)="placeOrder()">
+              Use this payment method
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-step">
+        <div class="step-header">
+          <h3>3. Review items and delivery</h3>
+        </div>
+        <div class="step-body">
+          <div class="delivery-date-banner">
+            Guaranteed delivery: <b>Tomorrow</b>
+          </div>
+
+          <div class="cart-items">
+            <div class="cart-item" *ngFor="let item of items">
+              <div class="item-img">
+                <img
+                  [src]="item.product.imageUrl?.[0] || 'https://via.placeholder.com/100'"
+                  [alt]="item.product.name"
+                />
+              </div>
+              <div class="item-details">
+                <h4>{{ item.product.name }}</h4>
+                <p class="stock status">In Stock</p>
+                <p class="price">
+                  ₹{{ item.product.price | number : "1.0-0" }}
+                </p>
+
+                <div class="qty-control">
+                  <label>Qty:</label>
+                  <button (click)="decreaseQty(item)">−</button>
+                  <span>{{ item.quantity }}</span>
+                  <button (click)="increaseQty(item)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="sidebar">
+      <div class="order-summary-box">
+        <button class="btn-yellow full-width" (click)="placeOrder()">
+          Use this payment method
+        </button>
+        <p class="terms">
+          By clicking this button, you agree to Bazaar's
+          <a href="#">privacy notice</a> and <a href="#">conditions of use</a>.
+        </p>
+
+        <div class="summary-divider"></div>
+
+        <h3>Order Summary</h3>
+        <div class="summary-row">
+          <span>Items:</span>
+          <span>₹{{ totals.subtotal | number : "1.2-2" }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery:</span>
+          <span>₹{{ totals.deliveryCharge | number : "1.2-2" }}</span>
+        </div>
+        <div class="summary-row" *ngIf="useWallet">
+          <span>Wallet:</span>
+          <span class="negative">-₹{{ walletBalance | number : "1.2-2" }}</span>
+        </div>
+        <div class="summary-row" *ngIf="totals.discount">
+          <span>Promotion:</span>
+          <span class="negative"
+            >-₹{{ totals.discount | number : "1.2-2" }}</span
+          >
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row total">
+          <span>Order Total:</span>
+          <span>₹{{ totals.total | number : "1.2-2" }}</span>
+        </div>
       </div>
-      <div class="summary-row">
-        <span>Subtotal</span>
-        <span>₹{{ totals.subtotal }}</span>
-      </div>
-      <div class="summary-row">
-        <span>Delivery</span>
-        <span>₹{{ totals.deliveryCharge }}</span>
-      </div>
-      <div class="summary-row total">
-        <span>Total</span>
-        <span>₹{{ totals.total }}</span>
-      </div>
-      <button
-        class="btn btn-primary"
-        type="button"
-        (click)="continueToPayment()"
-        [disabled]="!items.length"
-      >
-        Continue to Payment
-      </button>
     </div>
   </div>
-</section>
+</div>

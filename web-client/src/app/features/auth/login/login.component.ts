@@ -8,7 +8,7 @@
 
 // }
 
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -18,6 +18,8 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { GoogleAuthService } from '../../../core/services/google-auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -26,23 +28,34 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
+  @ViewChild('googleBtn') googleBtnRef?: ElementRef<HTMLDivElement>;
+
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
   errorMessage = '';
+  googleClientId = environment.googleClientId;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private authService: AuthService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private googleAuthService: GoogleAuthService,
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false],
     });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.googleClientId && this.googleBtnRef) {
+      this.googleAuthService.initialize(this.googleClientId);
+      this.googleAuthService.renderButton(this.googleBtnRef.nativeElement);
+    }
   }
 
   togglePasswordVisibility() {

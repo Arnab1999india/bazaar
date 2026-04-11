@@ -1,17 +1,19 @@
 import { Order } from "../models/Order";
 import { Cart } from "../models/Cart";
 import { Product } from "../models/Product";
+import { User } from "../models/User";
 import {
   IOrderInput,
   IOrderQuery,
   OrderStatus,
 } from "../interfaces/order.interface";
 import { AppError, ErrorType } from "../interfaces/error.interface";
+import { EmailService } from "./email.service";
 
 export class OrderService {
   static async createOrder(
     userId: string,
-    orderData: IOrderInput
+    orderData: IOrderInput,
   ): Promise<any> {
     try {
       // If items are provided in orderData, use them; otherwise, use cart items
@@ -22,12 +24,12 @@ export class OrderService {
         orderItems = [];
 
         for (const item of orderData.items) {
-          const product = await Product.findById(item.productId);
+          const product = await Product.findById(item.productId).lean();
           if (!product) {
             throw new AppError(
               ErrorType.NOT_FOUND,
               `Product ${item.productId} not found`,
-              404
+              404,
             );
           }
 
@@ -35,14 +37,16 @@ export class OrderService {
             throw new AppError(
               ErrorType.VALIDATION,
               `Product ${product.name} is out of stock`,
-              400
+              400,
             );
           }
 
           orderItems.push({
-            product: product.id,
+            product: (product as any).id || (product as any)._id,
             quantity: item.quantity,
             price: product.price,
+            sellerId: product.owner,
+            itemStatus: OrderStatus.PENDING,
           });
         }
       } else {
@@ -53,14 +57,14 @@ export class OrderService {
         }
 
         // Populate cart items with product details
-        await cart.populate("items.product", "name price stockStatus");
+        await cart.populate("items.product", "name price stockStatus owner");
 
         orderItems = cart.items.map((item: any) => {
           if (item.product.stockStatus === "out-of-stock") {
             throw new AppError(
               ErrorType.VALIDATION,
               `Product ${item.product.name} is out of stock`,
-              400
+              400,
             );
           }
 
@@ -68,6 +72,8 @@ export class OrderService {
             product: item.product.id || item.product._id,
             quantity: item.quantity,
             price: item.product.price,
+            sellerId: item.product.owner,
+            itemStatus: OrderStatus.PENDING,
           };
         });
       }
@@ -75,10 +81,15 @@ export class OrderService {
       // Calculate total amount
       const totalAmount = orderItems.reduce(
         (sum: number, item: any) => sum + item.price * item.quantity,
-        0
+        0,
       );
 
       // Create order
+      const paymentStatus =
+        orderData.paymentMethod === "razorpay" && orderData.paymentId
+          ? "completed"
+          : "pending";
+
       const order = await Order.create({
         items: orderItems,
         buyer: userId,
@@ -86,7 +97,11 @@ export class OrderService {
         shippingAddress: orderData.shippingAddress,
         paymentMethod: orderData.paymentMethod,
         status: OrderStatus.PENDING,
-        paymentStatus: "pending",
+        paymentStatus,
+        paymentProvider: orderData.paymentProvider,
+        paymentId: orderData.paymentId,
+        paymentSignature: orderData.paymentSignature,
+        razorpayOrderId: orderData.razorpayOrderId,
       });
 
       // If order was created from cart, clear the cart
@@ -103,7 +118,24 @@ export class OrderService {
         { path: "items.product", select: "name price imageUrl" },
       ]);
 
-      return order.toJSON();
+      const orderJson = order.toJSON();
+
+      // Send confirmation email (non-blocking)
+      User.findById(userId).then((user) => {
+        if (user?.email) {
+          EmailService.sendOrderConfirmationEmail(user.email, {
+            orderNumber: orderJson.orderNumber,
+            totalAmount: orderJson.totalAmount,
+            items: (orderJson.items || []).map((i: any) => ({
+              name: i.name || (i.product as any)?.name || 'Product',
+              quantity: i.quantity,
+              price: i.price,
+            })),
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+
+      return orderJson;
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError(ErrorType.INTERNAL, "Error creating order", 500);
@@ -134,7 +166,7 @@ export class OrderService {
 
   static async getUserOrders(
     userId: string,
-    query: IOrderQuery = {}
+    query: IOrderQuery = {},
   ): Promise<{ orders: any[]; total: number; page: number; limit: number }> {
     try {
       const { status, startDate, endDate, page = 1, limit = 10 } = query;
@@ -177,10 +209,105 @@ export class OrderService {
     }
   }
 
+  static async getSellerOrders(
+    sellerId: string,
+    query: IOrderQuery = {},
+  ): Promise<{ orders: any[]; total: number; page: number; limit: number }> {
+    try {
+      const { status, startDate, endDate, page = 1, limit = 10 } = query;
+
+      const filter: any = { "items.sellerId": sellerId };
+      if (status) {
+        filter["items.itemStatus"] = status;
+      }
+      if (startDate || endDate) {
+        filter.createdAt = {};
+        if (startDate) filter.createdAt.$gte = startDate;
+        if (endDate) filter.createdAt.$lte = endDate;
+      }
+
+      const skip = (page - 1) * limit;
+      const [orders, total] = await Promise.all([
+        Order.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("buyer", "name email")
+          .populate("items.product", "name price imageUrl"),
+        Order.countDocuments(filter),
+      ]);
+
+      const mapped = orders.map((order) => {
+        const filteredItems = order.items.filter(
+          (item: any) => item.sellerId?.toString() === sellerId,
+        );
+        const raw = order.toJSON();
+        return {
+          ...raw,
+          items: filteredItems,
+        };
+      });
+
+      return { orders: mapped, total, page, limit };
+    } catch (error) {
+      throw new AppError(
+        ErrorType.INTERNAL,
+        "Error fetching seller orders",
+        500,
+      );
+    }
+  }
+
+  static async updateSellerItemStatus(
+    orderId: string,
+    itemId: string,
+    status: OrderStatus,
+    sellerId: string,
+  ): Promise<any> {
+    try {
+      const order = await Order.findOne({
+        _id: orderId,
+        "items._id": itemId,
+        "items.sellerId": sellerId,
+      });
+
+      if (!order) {
+        throw new AppError(ErrorType.NOT_FOUND, "Order item not found", 404);
+      }
+
+      const item = order.items.find(
+        (entry: any) => entry._id?.toString() === itemId,
+      );
+      if (!item) {
+        throw new AppError(ErrorType.NOT_FOUND, "Order item not found", 404);
+      }
+      (item as any).itemStatus = status;
+      await order.save();
+
+      await order.populate([
+        { path: "buyer", select: "name email" },
+        { path: "items.product", select: "name price imageUrl" },
+      ]);
+
+      const raw = order.toJSON();
+      raw.items = raw.items.filter(
+        (entry: any) => entry.sellerId?.toString() === sellerId,
+      );
+      return raw;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(
+        ErrorType.INTERNAL,
+        "Error updating seller order item",
+        500,
+      );
+    }
+  }
+
   static async updateOrderStatus(
     orderId: string,
     status: OrderStatus,
-    userId?: string
+    userId?: string,
   ): Promise<any> {
     try {
       const order = await Order.findById(orderId);
@@ -209,7 +336,7 @@ export class OrderService {
       throw new AppError(
         ErrorType.INTERNAL,
         "Error updating order status",
-        500
+        500,
       );
     }
   }
@@ -235,7 +362,7 @@ export class OrderService {
         throw new AppError(
           ErrorType.VALIDATION,
           "Order cannot be cancelled",
-          400
+          400,
         );
       }
 

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ProductService } from "../services/product.service";
+import { UploadUtil } from "../utils/upload.util";
 
 export class ProductController {
   /**
@@ -89,6 +90,11 @@ export class ProductController {
   async createProduct(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
+      }
       const product = await ProductService.createProduct(req.body, userId);
       res.status(201).json({ success: true, data: product });
     } catch (error) {
@@ -105,6 +111,11 @@ export class ProductController {
   async updateProduct(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
+      }
       const product = await ProductService.updateProduct(
         req.params.id,
         req.body,
@@ -124,12 +135,39 @@ export class ProductController {
   }
 
   /**
+   * Upload product images to Cloudinary
+   * @route POST /api/products/upload-images
+   */
+  async uploadImages(req: Request, res: Response) {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "No files provided" });
+      }
+      const results = await UploadUtil.uploadMultipleImages(files, "products");
+      res.json({ success: true, data: results.map((r) => r.url) });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to upload images",
+      });
+    }
+  }
+
+  /**
    * Delete product by ID
    * @route DELETE /api/products/:id
    */
   async deleteProduct(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
+      }
       const deleted = await ProductService.deleteProduct(req.params.id, userId);
       if (!deleted) {
         return res

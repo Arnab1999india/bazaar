@@ -2,7 +2,9 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const roleGuard = (roles: Array<'buyer' | 'seller' | 'admin'>): CanActivateFn => {
+type AppRole = 'customer' | 'seller' | 'admin';
+
+export const roleGuard = (roles: Array<AppRole>): CanActivateFn => {
   return (route, state) => {
     const authService = inject(AuthService);
     const router = inject(Router);
@@ -14,7 +16,9 @@ export const roleGuard = (roles: Array<'buyer' | 'seller' | 'admin'>): CanActiva
     }
 
     const user = authService.getCurrentUser();
-    if (user && roles.includes(user.role ?? 'buyer')) {
+    const normalizedRole =
+      user?.role === 'buyer' ? 'customer' : (user?.role ?? 'customer');
+    if (user && roles.includes(normalizedRole)) {
       return true;
     }
 

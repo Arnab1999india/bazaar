@@ -11,6 +11,15 @@ export interface Pagination {
   total: number;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  count: number;
+  children: Category[];
+}
+
 // Auth
 export interface AuthTokens {
   accessToken: string;
@@ -21,7 +30,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role?: 'buyer' | 'seller' | 'admin';
+  role?: 'customer' | 'seller' | 'admin' | 'buyer';
 }
 
 export interface LoginPayload {
@@ -39,7 +48,7 @@ export interface RegistrationInitiatePayload {
   name: string;
   email: string;
   password: string;
-  role?: 'buyer' | 'seller' | 'admin' | 'customer';
+  role?: 'customer' | 'seller' | 'admin';
   phone?: string;
 }
 
@@ -56,6 +65,7 @@ export interface ProductAttribute {
 
 export interface Product {
   id: string;
+  _id?: string;
   name: string;
   price: number;
   category: string;
@@ -97,14 +107,152 @@ export interface ProductCreatePayload {
   description?: string;
   price: number;
   category: string;
-  brand: string;
+  brand?: string;
   imageUrl: string[];
+  stockStatus?: 'in-stock' | 'out-of-stock';
+  totalStock?: number;
   variants?: ProductVariant[];
 }
 
 export interface ProductUpdatePayload
   extends Partial<Omit<ProductCreatePayload, 'variants'>> {
   variants?: ProductVariant[];
+}
+
+// Cart
+export interface CartLineItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface CartResponse {
+  id: string;
+  items: CartLineItem[];
+  totalItems: number;
+  totalAmount: number;
+}
+
+// Orders
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'packed'
+  | 'shipped'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancelled'
+  | 'returned'
+  | 'refunded';
+
+export type OrderItemStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled';
+
+export interface OrderTimeline {
+  status: string;
+  timestamp: string;
+  description: string;
+  updatedBy?: string;
+}
+
+export interface ShipmentUpdate {
+  status: string;
+  location?: string;
+  timestamp: string;
+  description?: string;
+}
+
+export interface ShipmentTracking {
+  carrier?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  currentLocation?: string;
+  estimatedDelivery?: string;
+  updates?: ShipmentUpdate[];
+}
+
+export interface OrderItem {
+  id: string;
+  _id?: string;
+  product: Product | { id: string; name: string; imageUrl?: string[]; price?: number };
+  sellerId: string;
+  quantity: number;
+  price: number;
+  name?: string;
+  imageUrl?: string;
+  itemStatus: OrderItemStatus;
+}
+
+export interface Order {
+  id: string;
+  _id?: string;
+  orderNumber?: string;
+  items: OrderItem[];
+  buyer: { id: string; name: string; email: string } | string;
+  totalAmount: number;
+  subtotal?: number;
+  discount?: number;
+  deliveryCharge?: number;
+  tax?: number;
+  status: OrderStatus;
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
+  shippingAddress: {
+    fullName?: string;
+    phone?: string;
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  };
+  shipmentTracking?: ShipmentTracking;
+  timeline?: OrderTimeline[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Reviews
+export interface Review {
+  id: string;
+  user: { id: string; name: string } | string;
+  product: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderCreatePayload {
+  items?: Array<{ productId: string; quantity: number }>;
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  };
+  paymentMethod: string;
+  paymentProvider?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+  razorpayOrderId?: string;
+}
+
+// Payments
+export interface RazorpayOrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
 }
 
 // Stores
@@ -129,4 +277,117 @@ export interface UserProfileUpdate {
   educationSchool?: string;
   educationCollege?: string;
   profileImageUrl?: string;
+}
+
+// Sellers
+export type SellerProfileStatus = 'pending' | 'approved' | 'rejected';
+
+export interface SellerAddress {
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
+export interface SellerDocument {
+  type: string;
+  url: string;
+}
+
+export interface SellerProfile {
+  id: string;
+  user: string;
+  businessName: string;
+  legalName?: string | null;
+  businessType: string;
+  phone: string;
+  gstNumber?: string | null;
+  panNumber?: string | null;
+  shopAddress: SellerAddress;
+  warehouseAddress?: SellerAddress | null;
+  kycDocuments: SellerDocument[];
+  status: SellerProfileStatus;
+  rejectionReason?: string | null;
+  submittedAt?: string | null;
+  approvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Seller Stats
+export interface SellerStats {
+  summary: {
+    totalOrders: number;
+    totalRevenue: number;
+    avgOrderValue: number;
+    totalProducts: number;
+  };
+  weekly: { orders: number; revenue: number };
+  monthly: {
+    orders: number;
+    revenue: number;
+    lastMonthRevenue: number;
+    growthRate: string | null;
+  };
+  ordersByStatus: {
+    pending: number;
+    confirmed: number;
+    processing: number;
+    packed: number;
+    shipped: number;
+    outForDelivery: number;
+    delivered: number;
+    cancelled: number;
+    returned: number;
+    refunded: number;
+  };
+  recentOrders: Array<{
+    id: string;
+    orderNumber: string;
+    status: string;
+    totalAmount: number;
+    createdAt: string;
+    buyer: { name: string; email: string } | string;
+  }>;
+}
+
+// Admin Stats
+export interface AdminStats {
+  users: { total: number; sellers: number; buyers: number };
+  sellers: { pending: number; approved: number };
+  orders: {
+    total: number;
+    weekly: number;
+    monthly: number;
+    byStatus: Record<string, number>;
+  };
+  revenue: {
+    total: number;
+    weekly: number;
+    monthly: number;
+    avgOrderValue: number;
+  };
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isVerified: boolean;
+  createdAt: string;
+}
+
+export interface SellerProfileInput {
+  businessName: string;
+  legalName?: string;
+  businessType: string;
+  phone: string;
+  gstNumber?: string;
+  panNumber?: string;
+  shopAddress: SellerAddress;
+  warehouseAddress?: SellerAddress;
+  kycDocuments?: SellerDocument[];
 }
